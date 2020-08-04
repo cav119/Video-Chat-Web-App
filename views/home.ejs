@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mediochat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/styles.min.css">
+</head>
+
+<body>
+    <div class="newsletter-subscribe" style="margin:80px;">
+        <div class="container">
+            <div class="intro">
+                <p class="text-center"><img class="img-fluid" src="img/logo.png"></p>
+                <p class="text-center" style="color:rgb(0,0,0);">Enter the access code provided by your health consultant to start a video call with them</p>
+            </div>
+            <form class="form-inline" method="post">
+                <div class="form-group">
+                    <input id="codeInput" class="form-control" type="text" name="code" placeholder="Your Code"></div>
+                <div class="form-group">
+                	<button id="startCallButton" type="button" data-toggle="modal" data-target="#detailsModal" class="btn btn-primary">START CALL</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="features-boxed">
+        <div class="container">
+            <div class="intro">
+                <h2 class="text-center">Why MedioChat?</h2>
+            </div>
+            <div class="row justify-content-center features" style="color:rgb(0,0,0);">
+                <div class="col-sm-6 col-md-5 col-lg-4 item">
+                    <div class="box"><i class="fa fa-lock icon"></i>
+                        <h3 class="name">Secure</h3>
+                        <p class="description" style="color:rgb(0,0,0);">Built on a peer to peer model, there is no intermediate entity that can see or handles your data.</p><a href="#" class="learn-more">Learn more »</a></div>
+                </div>
+                <div class="col-sm-6 col-md-5 col-lg-4 item">
+                    <div class="box"><i class="fa fa-bolt icon"></i>
+                        <h3 class="name">Fast</h3>
+                        <p class="description" style="color:rgb(0,0,0);">Aenean tortor est, vulputate quis leo in, vehicula rhoncus lacus. Praesent aliquam in tellus eu.</p><a href="#" class="learn-more">Learn more »</a></div>
+                </div>
+                <div class="col-sm-6 col-md-5 col-lg-4 item">
+                    <div class="box"><i class="fa fa-group icon"></i>
+                        <h3 class="name">Easy</h3>
+                        <p class="description" style="color:rgb(0,0,0);">Aenean tortor est, vulputate quis leo in, vehicula rhoncus lacus. Praesent aliquam in tellus eu.</p><a href="#" class="learn-more">Learn more »</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="testimonials-clean">
+        <div class="container" style="padding-top:21px;">
+            <div class="intro">
+                <h2 class="text-center">What our users say</h2>
+                <p class="text-center" style="color:rgb(0,0,0);">Read what some of our users (both patients and doctors) have to say about MedioChat</p>
+            </div>
+            <div class="row people">
+                <div class="col-md-6 col-lg-4 item">
+                    <div class="box">
+                        <p class="description" style="color:rgb(0,0,0);">Aenean tortor est, vulputate quis leo in, vehicula rhoncus lacus. Praesent aliquam in tellus eu gravida. Aliquam varius finibus est.</p>
+                    </div>
+                    <div class="author"><img class="rounded-circle" src="img/1.jpg">
+                        <h5 class="name">Ben Johnson</h5>
+                        <p class="title" style="color:rgb(0,0,0);">Doctor at Default Hospital</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 item">
+                    <div class="box">
+                        <p class="description" style="color:rgb(0,0,0);">Praesent aliquam in tellus eu gravida. Aliquam varius finibus est, et interdum justo suscipit id.</p>
+                    </div>
+                    <div class="author"><img class="rounded-circle" src="img/3.jpg">
+                        <h5 class="name">Carl Kent</h5>
+                        <p class="title" style="color:rgb(0,0,0);">Patient</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 item">
+                    <div class="box">
+                        <p class="description">Aliquam varius finibus est, et interdum justo suscipit. Vulputate quis leo in, vehicula rhoncus lacus. Praesent aliquam in tellus eu.</p>
+                    </div>
+                    <div class="author"><img class="rounded-circle" src="img/2.jpg">
+                        <h5 class="name">Emily Clark</h5>
+                        <p class="title" style="color:rgb(0,0,0);">GP at Default Clinic</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-basic" style="margin:14px;padding-bottom:20px;">
+        <footer>
+            <ul class="list-inline">
+                <li class="list-inline-item"><a href="#">Home</a></li>
+                <li class="list-inline-item"><a href="#">Login</a></li>
+                <li class="list-inline-item"><a href="#">FAQ</a></li>
+                <li class="list-inline-item"><a href="#">About</a></li>
+                <li class="list-inline-item"><a href="#">Privacy Policy</a></li>
+            </ul>
+            <p class="copyright">Mediochat © 2020</p>
+        </footer>
+    </div>
+    <div class="modal fade" id="detailsModal" role="dialog" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Enter your details</h4><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button></div>
+                <form class="form-inline" action="/join-call" method="post" style="padding-bottom:4px;">
+                    <div class="modal-body">
+                        <div class="form-group" style="padding-bottom:10px;"><label style="padding-right:27px;">First Name</label>
+                            <input class="form-control" type="text" name="name" placeholder="Your Name">
+                        </div>
+                        <div class="form-group" style="padding-bottom:10px;"><label style="padding-right:42px;">Surname</label>
+                            <input class="form-control" type="text" name="surname" placeholder="Your Surname">
+                        </div>
+                        <div class="form-group" style="padding-bottom:10px;"><label style="padding-right:14px;">Date of birth</label>
+                            <input class="form-control" type="date" name="dob" placeholder="Your DOB">
+                        </div>
+                        <input type="hidden" id="codeHidden" name="code">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" type="submit">Call</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $('#startCallButton').on('click', function() {
+            var code = $("#codeInput").val();
+            $("#codeHidden").val(code);
+        });
+    </script>
+</body>
+
+</html>
