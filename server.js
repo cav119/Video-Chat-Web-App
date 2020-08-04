@@ -20,6 +20,8 @@ app.post('/join-call', (req, res) => {
   const name = req.body.name;
   const surname = req.body.surname;
   const dob = req.body.dob; // comes in the format YYYY-MM-DD
+  const code = req.body.code;
+
   // do validation and check if code is valid (appointment exists in firebase)
   res.redirect('/call')
 })
