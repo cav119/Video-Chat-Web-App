@@ -20,3 +20,4 @@ peerjs --port 3001
 ## Links
 - [Original video: How to make a Zoom clone](https://www.youtube.com/watch?v=DvlyzDZDEq4)
 - [Firebase auth with nodejs](https://www.youtube.com/watch?v=kX8by4eCyG4)
+- [Same tutorial as original but with a better room UI and a chat message function](https://www.youtube.com/watch?v=ZVznzY7EjuY)
