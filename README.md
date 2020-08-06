@@ -11,6 +11,7 @@ npm run devStart
 ```
 peerjs --port 3001
 ```
+4. Make sure that ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` are set to true. For deployment to Heroku, set to false.
 
 ## TODO and suggestions
 - Firebase authentication w/ NodeJS for doctors

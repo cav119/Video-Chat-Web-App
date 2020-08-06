@@ -1,4 +1,4 @@
-const DEBUG = false
+const LOCAL_DEBUG = false
 
 // Express app and Node server
 const express = require('express')
@@ -10,9 +10,9 @@ const io = require('socket.io')(server)
 // PeerJS server
 const { ExpressPeerServer } = require('peer')
 const peerServer = ExpressPeerServer(server, {
-  debug: DEBUG
+  debug: LOCAL_DEBUG
 })
-if (!DEBUG) {
+if (!LOCAL_DEBUG) {
   app.use('/peer', peerServer) // peer server running on /peer path
 }
 
