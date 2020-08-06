@@ -14,9 +14,13 @@ peerjs --port 3001
 4. Make sure that ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` are set to true. For deployment to Heroku, set to false.
 
 ## TODO and suggestions
-- Firebase authentication w/ NodeJS for doctors
+- Error catching on the frontend for signup.ejs and login.ejs when Firebase returns errors (ie password too short, or incorrect details)
+- Start working on the doctor dashboard
 - Firebase data store APIs for creating rooms and validation
+- Improve room UI using the 3rd video on the list below
+- Add a chat to a video room
 - Limit who can join a room using cookies?
+- Factor out frontend code from login and signup views
 
 ## Links
 - [Original video: How to make a Zoom clone](https://www.youtube.com/watch?v=DvlyzDZDEq4)

@@ -35,7 +35,7 @@
                 <div class="col-sm-6 col-md-5 col-lg-4 item">
                     <div class="box"><i class="fa fa-lock icon"></i>
                         <h3 class="name">Secure</h3>
-                        <p class="description" style="color:rgb(0,0,0);">Built on a peer to peer model, there is no intermediate entity that can see or handles your data.</p><a href="#" class="learn-more">Learn more »</a></div>
+                        <p class="description" style="color:rgb(0,0,0);">Built on a peer to peer model, there is no intermediate entity that can see or handle your data.</p><a href="#" class="learn-more">Learn more »</a></div>
                 </div>
                 <div class="col-sm-6 col-md-5 col-lg-4 item">
                     <div class="box"><i class="fa fa-bolt icon"></i>
@@ -116,6 +116,7 @@
                             <input class="form-control" type="date" name="dob" placeholder="Your DOB" required>
                         </div>
                         <input type="hidden" id="codeHidden" name="code">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-primary" type="submit">Call</button>

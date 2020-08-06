@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mediochat Login</title>
+    <title>Mediochat Signup</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/styles.min.css">
@@ -16,24 +16,43 @@
 <body style="background-color:rgb(241,247,252);">
 
     <div class="login-clean">
-        <form id="login" style="padding-top:30px;">
+        <form id="signup" style="padding-top:30px;">
             <div class="illustration" style="padding-bottom:0px;"><img class="img-fluid" src="img/logo.png"></div>
+            <p style="text-align: center;">Register as a doctor to start video calling your patients</p>
             <div class="form-group">
-                <input class="form-control" type="email" name="email" placeholder="Email" style="color:rgb(0,0,0);" required>
+                <input class="form-control" id="email" type="email" name="email" placeholder="Email" style="color:rgb(0,0,0);" required>
             </div>
             <div class="form-group">
-                <input class="form-control" type="password" name="password" placeholder="Password" style="color:rgb(0,0,0);" required>
+                <input class="form-control" id="pass" type="password" name="password" placeholder="Password" style="color:rgb(0,0,0);" required>
             </div>
             <div class="form-group">
-                <button class="btn btn-primary btn-block" type="submit" style="background-color:rgb(5,90,218);">Log In</button>
+                <input class="form-control" id="confirm" type="password" name="passwordConfirmation" placeholder="Confirm Password" style="color:rgb(0,0,0);" required>
             </div>
-            <a href="#" class="forgot" style="color:rgb(78,81,84);">Forgot your email or password?</a>
+            
+            <span id="message"></span>
+
+            <div class="form-group">
+                <button id="submitButton" class="btn btn-primary btn-block" type="submit" style="background-color:rgb(5,90,218);">Sign Up</button>
+            </div>
         </form>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
-    
+
+    <script>
+        // PASSWORD STRENGTH CHECK, MATCHING CHECK, ETC...
+        $('#pass, #confirm').on('keyup', function () {
+            if ($('#pass').val() == $('#confirm').val()) {
+                $('#message').html('').css('color', 'green');
+                $('#submitButton').prop('disabled', false);
+            } else {
+                $('#message').html('Passwords do not match').css('color', 'red');
+                $('#submitButton').prop('disabled', true);
+            }
+        });
+    </script>
+
     <script>
         window.addEventListener("DOMContentLoaded", () => {
             const firebaseConfig = {
@@ -50,12 +69,12 @@
 
             firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
 
-            $("#login").on("submit", (event) => {
+            $("#signup").on("submit", (event) => {
                 event.preventDefault(); 
                 const email = event.target.email.value;
                 const password = event.target.password.value;
                 
-                firebase.auth().signInWithEmailAndPassword(email, password)
+                firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then(({ user }) => {
                     return user.getIdToken().then((idToken) => {
                         return fetch('/login', {
@@ -66,6 +85,9 @@
                                 'CSRF-Token': Cookies.get('XSRF-TOKEN'),
                             },
                             body: JSON.stringify({ idToken }),
+                        })
+                        .catch((error) => {
+                            $('#message').html(error.message).css('color', 'red');
                         });
                     });
                 })
@@ -79,6 +101,7 @@
             });
         });
     </script>
+
 </body>
 
 </html>
