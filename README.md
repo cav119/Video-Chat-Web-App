@@ -21,6 +21,7 @@ peerjs --port 3001
 - Add a chat to a video room
 - Limit who can join a room using cookies?
 - Factor out frontend code from login and signup views
+- HIDE serviceAccountKey.json config as an env variable for security on deployment?
 
 ## Links
 - [Original video: How to make a Zoom clone](https://www.youtube.com/watch?v=DvlyzDZDEq4)
