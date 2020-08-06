@@ -11,7 +11,7 @@ var optionsProduction = {
   port: 443
 }
 
-var DEBUG = true
+var DEBUG = false
 
 const myPeer = new Peer(undefined, DEBUG ? optionsDebug : optionsProduction)
 

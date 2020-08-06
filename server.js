@@ -1,4 +1,4 @@
-const DEBUG = true
+const DEBUG = false
 
 // Express app and Node server
 const express = require('express')
@@ -12,7 +12,7 @@ const { ExpressPeerServer } = require('peer')
 const peerServer = ExpressPeerServer(server, {
   debug: DEBUG
 })
-if (DEBUG) {
+if (!DEBUG) {
   app.use('/peer', peerServer) // peer server running on /peer path
 }
 
