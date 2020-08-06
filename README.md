@@ -22,6 +22,8 @@ peerjs --port 3001
 - Limit who can join a room using cookies?
 - Factor out frontend code from login and signup views
 - HIDE serviceAccountKey.json config as an env variable for security on deployment?
+- Force HTTPS requests
+- Need fix that you refresh to see a user joining on heroku version (peerjs or socket related error?)
 
 ## Links
 - [Original video: How to make a Zoom clone](https://www.youtube.com/watch?v=DvlyzDZDEq4)
