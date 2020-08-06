@@ -1,9 +1,23 @@
+const DEBUG = true
+
+// Express app and Node server
 const express = require('express')
 const app = express()
-const bodyParser = require('body-parser');
-
 const server = require('http').Server(app)
+// Socket.io server
 const io = require('socket.io')(server)
+
+// PeerJS server
+const { ExpressPeerServer } = require('peer')
+const peerServer = ExpressPeerServer(server, {
+  debug: DEBUG
+})
+if (DEBUG) {
+  app.use('/peer', peerServer) // peer server running on /peer path
+}
+
+
+const bodyParser = require('body-parser');
 const { v4: uuidV4 } = require('uuid')
 
 app.set('view engine', 'ejs')
@@ -48,4 +62,4 @@ io.on('connection', socket => {
   })
 })
 
-server.listen(3000)
+server.listen(process.env.PORT || 3000)
