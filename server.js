@@ -39,6 +39,16 @@ admin.initializeApp({
   databaseURL: 'https://mediochat.firebaseio.com'
 })
 
+// Middleware to force HTTPS connections
+app.all('*', (req, res, next) => {
+  if (!LOCAL_DEBUG) {
+    if (!req.secure && req.get('x-forwarded-proto') !== 'https') {
+      return res.redirect('https://' + req.get('host') + req.url);
+    }
+  }
+  next();  
+})
+
 // Middleware to set the CSRF token as a cookie
 app.all('*', (req, res, next) => {
   res.cookie('XSRF-TOKEN', req.csrfToken())
@@ -110,7 +120,7 @@ app.get('/logout', (req, res) => {
 })
 
 
-// Protected view for logged in users
+// Doctor call dashboard
 app.get('/dashboard', (req, res) => {
   const sessionCookie = req.cookies.session || ''
 
@@ -119,6 +129,21 @@ app.get('/dashboard', (req, res) => {
   .then(() => {
     // If authorised, render the view
     res.render('dashboard', {})
+  })
+  .catch((error) => {
+    res.redirect('/login')
+  })
+})
+
+// Account and profile settings page
+app.get('/account', (req, res) => {
+  const sessionCookie = req.cookies.session || ''
+
+  // check if logged in
+  admin.auth().verifySessionCookie(sessionCookie, true)
+  .then(() => {
+    // If authorised, render the view
+    res.render('account', {})
   })
   .catch((error) => {
     res.redirect('/login')

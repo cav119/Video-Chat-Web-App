@@ -17,11 +17,11 @@
                 <p class="text-center"><img class="img-fluid" src="img/logo.png"></p>
                 <p class="text-center" style="color:rgb(0,0,0);">Enter the access code provided by your health consultant to start a video call with them</p>
             </div>
-            <form class="form-inline" method="post">
+            <form class="form-inline" id="accessCodeForm">
                 <div class="form-group">
                     <input id="codeInput" class="form-control" type="text" name="code" placeholder="Your Code" required></div>
                 <div class="form-group">
-                	<button id="startCallButton" type="button" data-toggle="modal" data-target="#detailsModal" class="btn btn-primary">START CALL</button>
+                	<button id="startCallButton" type="submit" class="btn btn-primary">START CALL</button>
                 </div>
             </form>
         </div>
@@ -130,8 +130,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        $('#startCallButton').on('click', function() {
-            var code = $("#codeInput").val();
+        $("#accessCodeForm").on("submit", (event) => {
+            event.preventDefault(); 
+            const code = event.target.code.value;
+            // do basic frontend code validation:
+            // ie: code is a number, remove whitespace if present...
+            if (code == '') {
+                return;
+            }
+            $('#detailsModal').modal('show');
             $("#codeHidden").val(code);
         });
     </script>
