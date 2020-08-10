@@ -24,6 +24,9 @@
             <div class="form-group">
                 <input class="form-control" type="password" name="password" placeholder="Password" style="color:rgb(0,0,0);" required>
             </div>
+
+            <span id="message" style="color: red;"></span>
+
             <div class="form-group">
                 <button class="btn btn-primary btn-block" type="submit" style="background-color:rgb(5,90,218);">Log In</button>
             </div>
@@ -74,6 +77,9 @@
                 })
                 .then(() => {
                     window.location.assign('/dashboard');
+                })
+                .catch((error) => {
+                    $("#message").html(error.message);
                 });
                 return false;
             });

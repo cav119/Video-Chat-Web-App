@@ -85,9 +85,6 @@
                                 'CSRF-Token': Cookies.get('XSRF-TOKEN'),
                             },
                             body: JSON.stringify({ idToken }),
-                        })
-                        .catch((error) => {
-                            $('#message').html(error.message).css('color', 'red');
                         });
                     });
                 })
@@ -96,6 +93,9 @@
                 })
                 .then(() => {
                     window.location.assign('/dashboard');
+                })
+                .catch((error) => {
+                    $('#message').html(error.message).css('color', 'red');
                 });
                 return false;
             });

@@ -95,10 +95,9 @@ app.post('/login', (req, res) => {
   admin.auth().createSessionCookie(idToken, { expiresIn })
   .then(
     (sessionCookie) => {
-    const options = { maxAge: expiresIn, httpOnly: true }
-    res.cookie('session', sessionCookie, options)
-    res.end(JSON.stringify({ status: 'success' }))
-    console.log('success')
+      const options = { maxAge: expiresIn, httpOnly: true }
+      res.cookie('session', sessionCookie, options)
+      res.end(JSON.stringify({ status: 'success' }))
     },
     (error) => {
       console.log('error: ', error)

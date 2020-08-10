@@ -14,7 +14,6 @@ peerjs --port 3001
 4. Make sure that ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` are set to true. For deployment to Heroku, set to false.
 
 ## TODO and suggestions
-- Error catching on the frontend for signup.ejs and login.ejs when Firebase returns errors (ie password too short, or incorrect details)
 - Firebase data store APIs for creating rooms, doctor details, other...
 - Improve room UI using the 3rd video on the list below
 - Add a chat to a video room

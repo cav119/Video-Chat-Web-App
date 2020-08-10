@@ -135,7 +135,7 @@
             const code = event.target.code.value;
             // do basic frontend code validation:
             // ie: code is a number, remove whitespace if present...
-            if (code == '') {
+            if (code == '' || code.replace(/\s/g,'') == '') {
                 return;
             }
             $('#detailsModal').modal('show');
