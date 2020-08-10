@@ -11,7 +11,20 @@ npm run devStart
 ```
 peerjs --port 3001
 ```
-4. Make sure that ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` are set to true. For deployment to Heroku, set to false.
+4. Make sure that ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` are set to ```true```. For deployment to Heroku, set to ```false```.
+
+## Heroku deployment
+1. Commit and push all the latest changes to the REPO first
+2. Set ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` to ```false```.
+3. Commit for a heroku deployment: 
+```
+git commit -m "heroku v3"
+```
+4. Push and deploy:
+```
+git push heroku master
+```
+
 
 ## TODO and suggestions
 - Firebase data store APIs for creating rooms, doctor details, other...
