@@ -43,12 +43,47 @@
     <script>
         // PASSWORD STRENGTH CHECK, MATCHING CHECK, ETC...
         $('#pass, #confirm').on('keyup', function () {
-            if ($('#pass').val() == $('#confirm').val()) {
+
+            var passW = $('#pass').val();
+
+            var incorrectPass = "Passwords must be at least 8 characters long and contain a combination \
+            of uppercase, lowercase, numbers and a symbol";
+
+            const specialSymbols = '!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~';
+
+            const atLeastOneCharAndNumAndSymbol = passW => {
+                let numFound = false;
+                let charFound = false; 
+                let symbFound = false;
+
+                for(let i = 0; i < passW.length; i++){
+                    var c = passW[i];
+                    if(c >= '0' && c <= '9'){
+                        numFound = true;
+                    }
+                    if(c.match(/[a-z]/i)){
+                        charFound = true;
+                    }
+                    if(specialSymbols.includes(c)){
+                        symbFound = true;
+                    }
+                } 
+
+            return numFound && charFound && symbFound;
+            }
+
+            console.log(atLeastOneCharAndNumAndSymbol(passW));
+
+            if(passW.length < 8 || passW.toUpperCase() === passW || passW.toLowerCase() === passW 
+                || !atLeastOneCharAndNumAndSymbol(passW)) {
+                $('#message').html(incorrectPass).css('color', 'red');
+                $('#submitButton').prop('disabled', true);
+            } else if ($('#pass').val() == $('#confirm').val()) {
                 $('#message').html('').css('color', 'green');
                 $('#submitButton').prop('disabled', false);
             } else {
-                $('#message').html('Passwords do not match').css('color', 'red');
-                $('#submitButton').prop('disabled', true);
+            $('#message').html('Passwords do not match').css('color', 'red');
+            $('#submitButton').prop('disabled', true);
             }
         });
     </script>
