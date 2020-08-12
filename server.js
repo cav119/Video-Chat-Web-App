@@ -70,7 +70,13 @@ app.post('/join-call', (req, res) => {
   console.log(name, surname, dob, code)
 
   // do validation and check if code is valid (appointment exists in firebase)
-  res.redirect(`/${uuidV4()}`)
+  res.redirect(`/room/${uuidV4()}`)
+})
+
+// Enter a room, given its id
+app.get('/room/:room', (req, res) => {
+  console.log(req.params.room)
+  res.render('room', { roomId: req.params.room })
 })
 
 
@@ -149,12 +155,7 @@ app.get('/account', (req, res) => {
   })
 })
 
-
-// Enter a room, given its id
-app.get('/:room', (req, res) => {
-  res.render('room', { roomId: req.params.room })
-})
-
+// Socket Server Events
 io.on('connection', socket => {
   socket.on('join-room', (roomId, userId) => {
     socket.join(roomId)
