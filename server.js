@@ -21,7 +21,6 @@ if (!LOCAL_DEBUG) {
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const csrfMiddleware = require('csurf')({ cookie: true })
-const { v4: uuidV4 } = require('uuid')
 const admin = require('firebase-admin')
 
 // Application and external package setup
@@ -34,6 +33,8 @@ app.use(csrfMiddleware)
 
 // Setup Firebase API backend
 const serviceAccount = require('./serviceAccountKey.json')
+const { start } = require('repl')
+const { assert } = require('console')
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://mediochat.firebaseio.com'
@@ -94,7 +95,17 @@ app.post('/create-call', async(req, res) => {
   }
 
   const roomCode = Math.floor(100000 + Math.random() * 900000) // both the 6-digit access code and ID
-  const startsAt = new Date(Date.now()) // get from form. starts now check box, if not time and date input
+    
+  const email = req.body.email
+  const mobile = req.body.mobile
+  const startNow = req.body.startNow
+  const startTime = req.body.startTime
+
+  const startsAt = startNow == 'on' ? new Date(Date.now()) : new Date(startTime)
+  if (startsAt < new Date(Date.now())) {
+    res.status(401).send('Must select a date in the future')
+    return
+  }
 
   // create room in firebase
   try {
@@ -110,19 +121,16 @@ app.post('/create-call', async(req, res) => {
     return
   }
   
-  // take in the patient's email address or phone number via a FORM to send them the code
-  // send via firebase email system or SMS ?? (future)
-  const email = req.body.email
-  const mobile = req.body.mobile
   if (email == '' || mobile == '') {
-    console.log(`PLEASE PROVIDE AT LEAST AN EMAIL OR A MOBILE NUMBER`)
+    console.log(`NOTE: PLEASE PROVIDE AT LEAST AN EMAIL OR A MOBILE NUMBER TO SEND THE CODE`)
   }
 
   // if should start now, go to room, otherwise, back to dashboard
-
-  // redirect to /room/roomId
-  //res.redirect(`/room/${roomCode}`)
-  res.redirect('/dashboard')
+  if (startNow == 'on') {
+    res.redirect(`/room/${roomCode}`)
+  } else {
+    res.redirect('dashboard')
+  }
 })
 
 
@@ -182,6 +190,9 @@ app.get('/dashboard', (req, res) => {
     // If authorised, render the view
     // const userID = userData.uid
     // get user information from firebase
+    
+    // get list of all rooms where the doctorID matches (for history and upcoming)
+
     res.render('dashboard', { csrfToken: req.csrfToken() })
   })
   .catch((error) => {

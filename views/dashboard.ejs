@@ -79,13 +79,42 @@
                         </table>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title">Some other stuff here</h4>
-                            <h6 class="text-muted card-subtitle mb-2">Subtitle</h6>
-                            <p class="card-text">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p><a class="card-link" href="#">Link</a><a class="card-link"
-                                href="#">Link</a></div>
+                <div class="col-md-6" style="margin-top:0px;">
+                    <h4 class="text-center" style="margin-bottom:15px;">Upcoming Calls</h4>
+                    <div class="datagrid">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Column 1</th>
+                                    <th>Column 2</th>
+                                    <th>Column 2</th>
+                                    <th>Column 4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Cell 1</td>
+                                    <td>Cell 2</td>
+                                    <td>Text</td>
+                                    <td>Text</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="paging">
+                                            <ul>
+                                                <li><a href="#"> <span>Previous </span></a></li>
+                                                <li><a href="#" class="active"> <span>1 </span></a></li>
+                                                <li><a href="#"> <span>2 </span></a></li>
+                                                <li><a href="#"> <span>3</span></a></li>
+                                                <li><a href="#"> <span>Next </span></a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -99,12 +128,24 @@
                     <h4 class="modal-title">Call Setup</h4><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button></div>
                 <form class="form-inline" action="/create-call" method="post" style="padding-bottom:4px;">
                     <div class="modal-body">
-                        <div class="form-group" style="padding-bottom:10px;"><label style="padding-right:27px;">Patient's Mobile Number:</label>
-                            <input class="form-control" type="tel" name="mobile">
+                        <div class="form-group" style="padding-bottom:10px;">
+                            <label style="padding-right:27px;">Patient's Mobile Number:</label>
+                            <input class="form-control" type="tel" name="mobile" placeholder="Their mobile number">
                         </div>
-                        <div class="form-group" style="padding-bottom:10px;"><label style="padding-right:42px;">Patient's Email:</label>
+                        <div class="form-group" style="padding-bottom:10px;">
+                            <label style="padding-right:42px;">Patient's Email:</label>
                             <input class="form-control" type="email" name="email" placeholder="Their email">
                         </div>
+                        <div class="form-group" style="padding-bottom:10px;">
+                            <label style="padding-right:42px;">Start Now?</label>
+                            <input id="startCheckbox" class="form-control" type="checkbox" name="startNow" checked>
+                        </div>
+
+                        <div id="scheduleTimeInput" class="form-group" style="padding-bottom:10px; display: none">
+                            <label style="padding-right:42px;">Schedule Call Time:</label>
+                            <input id="dateTimeInput" class="form-control" type="datetime-local" name="startTime">
+                        </div>
+                        
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     </div>
                     <div class="modal-footer">
@@ -118,6 +159,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
     <script src="js/dashboard.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            const dateString = new Date().toISOString()
+            $("#dateTimeInput").attr("min", dateString.substring(0, dateString.length - 8))
+        })
+
+        $("#startCheckbox").click(function() {
+            if ($(this).prop("checked")) {
+                $("#scheduleTimeInput").hide()
+            } else {
+                $("#scheduleTimeInput").show()
+            }
+        })
+    </script>
+
 </body>
 
 </html>
