@@ -27,7 +27,6 @@ git push heroku master
 
 
 ## TODO and suggestions
-- Firebase data store APIs for creating rooms, doctor details, other...
 - Improve room UI using the 3rd video on the list below
 - Add a chat to a video room
 - Limit who can join a room using cookies?

@@ -68,15 +68,61 @@ app.post('/join-call', (req, res) => {
   const code = req.body.code;
 
   console.log(name, surname, dob, code)
-
   // do validation and check if code is valid (appointment exists in firebase)
-  res.redirect(`/room/${uuidV4()}`)
+  // should be under the rooms collection, where code is the document ID
+  // ie if code not found or the room is finished, then invalid
+
+  res.redirect(`/room/${code}`)
 })
 
 // Enter a room, given its id
 app.get('/room/:room', (req, res) => {
-  console.log(req.params.room)
   res.render('room', { roomId: req.params.room })
+})
+
+// Creates a call for a doctor: generates code and room
+app.post('/create-call', async(req, res) => {
+
+  // Ensure that the request is from a logged in user and get their UID
+  var doctorID = ''
+  try {
+    const result = await admin.auth().verifySessionCookie(req.cookies.session || '', true)
+    doctorID = result.uid
+  } catch (error) {
+    res.status(401).send('Unauthorised request')
+    return
+  }
+
+  const roomCode = Math.floor(100000 + Math.random() * 900000) // both the 6-digit access code and ID
+  const startsAt = new Date(Date.now()) // get from form. starts now check box, if not time and date input
+
+  // create room in firebase
+  try {
+    const doctorRef = admin.firestore().collection('users').doc(doctorID) // do some validation maybe? not entirely necessary tbh
+    const newRoomRef = admin.firestore().collection('rooms').doc(`${roomCode}`)
+    await newRoomRef.set({
+      'doctorID': doctorRef,
+      'finished': false,
+      'startsAt': admin.firestore.Timestamp.fromDate(startsAt)
+    })
+  } catch (error) {
+    console.log("ERROR: ", error)
+    return
+  }
+  
+  // take in the patient's email address or phone number via a FORM to send them the code
+  // send via firebase email system or SMS ?? (future)
+  const email = req.body.email
+  const mobile = req.body.mobile
+  if (email == '' || mobile == '') {
+    console.log(`PLEASE PROVIDE AT LEAST AN EMAIL OR A MOBILE NUMBER`)
+  }
+
+  // if should start now, go to room, otherwise, back to dashboard
+
+  // redirect to /room/roomId
+  //res.redirect(`/room/${roomCode}`)
+  res.redirect('/dashboard')
 })
 
 
@@ -88,6 +134,7 @@ app.get('/signup', (req, res) => {
 
 // Login page
 app.get('/login', (req, res) => {
+  // should check if already logged in, else just redirect
   res.render('login', {})
 })
 
@@ -131,9 +178,11 @@ app.get('/dashboard', (req, res) => {
 
   // check if logged in
   admin.auth().verifySessionCookie(sessionCookie, true)
-  .then(() => {
+  .then((userData) => {
     // If authorised, render the view
-    res.render('dashboard', {})
+    // const userID = userData.uid
+    // get user information from firebase
+    res.render('dashboard', { csrfToken: req.csrfToken() })
   })
   .catch((error) => {
     res.redirect('/login')
@@ -146,8 +195,10 @@ app.get('/account', (req, res) => {
 
   // check if logged in
   admin.auth().verifySessionCookie(sessionCookie, true)
-  .then(() => {
+  .then((userData) => {
     // If authorised, render the view
+    const userID = userData.uid
+    // use this to get user data from firebase
     res.render('account', {})
   })
   .catch((error) => {
