@@ -43,79 +43,92 @@
             <div class="row">
                 <div class="col-md-6" style="margin-top:0px;">
                     <h4 class="text-center" style="margin-bottom:15px;">Call History</h4>
-                    <div class="datagrid">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Column 1</th>
-                                    <th>Column 2</th>
-                                    <th>Column 2</th>
-                                    <th>Column 4</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                    <td>Text</td>
-                                    <td>Text</td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="paging">
-                                            <ul>
-                                                <li><a href="#"> <span>Previous </span></a></li>
-                                                <li><a href="#" class="active"> <span>1 </span></a></li>
-                                                <li><a href="#"> <span>2 </span></a></li>
-                                                <li><a href="#"> <span>3</span></a></li>
-                                                <li><a href="#"> <span>Next </span></a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                    <% if (callHistory.length > 0) { %>
+                        <div class="datagrid">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Call ID</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Column 4</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% for (let call of callHistory){ %>
+                                        <tr>
+                                            <td><%= call.roomCode %></td>
+                                            <td><%= call.startsAt.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td><%= call.startsAt.toLocaleTimeString() %></td>
+                                            <td>Some other data</td>
+                                        </tr>
+                                    <%}%>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="paging">
+                                                <ul>
+                                                    <li><a href="#"> <span>Previous </span></a></li>
+                                                    <li><a href="#" class="active"> <span>1 </span></a></li>
+                                                    <li><a href="#"> <span>2 </span></a></li>
+                                                    <li><a href="#"> <span>3</span></a></li>
+                                                    <li><a href="#"> <span>Next </span></a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    <%} else {%>
+                        <h5 class="text-center">You haven't made any calls yet.</h5>
+                    <%}%>
+
                 </div>
                 <div class="col-md-6" style="margin-top:0px;">
                     <h4 class="text-center" style="margin-bottom:15px;">Upcoming Calls</h4>
-                    <div class="datagrid">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Column 1</th>
-                                    <th>Column 2</th>
-                                    <th>Column 2</th>
-                                    <th>Column 4</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                    <td>Text</td>
-                                    <td>Text</td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="paging">
-                                            <ul>
-                                                <li><a href="#"> <span>Previous </span></a></li>
-                                                <li><a href="#" class="active"> <span>1 </span></a></li>
-                                                <li><a href="#"> <span>2 </span></a></li>
-                                                <li><a href="#"> <span>3</span></a></li>
-                                                <li><a href="#"> <span>Next </span></a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                    <% if (upcomingCalls.length > 0) { %>
+                        <div class="datagrid">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Call ID</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Column 4</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% for (let call of upcomingCalls){ %>
+                                        <tr>
+                                            <td><%= call.roomCode %></td>
+                                            <td><%= call.startsAt.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                            <td><%= call.startsAt.toLocaleTimeString() %></td>
+                                            <td>Some other data</td>
+                                        </tr>
+                                    <%}%>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="paging">
+                                                <ul>
+                                                    <li><a href="#"> <span>Previous </span></a></li>
+                                                    <li><a href="#" class="active"> <span>1 </span></a></li>
+                                                    <li><a href="#"> <span>2 </span></a></li>
+                                                    <li><a href="#"> <span>3</span></a></li>
+                                                    <li><a href="#"> <span>Next </span></a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    <%} else {%>
+                        <h5 class="text-center">You haven't got any scheduled calls.</h5>
+                    <%}%>
                 </div>
             </div>
         </div>

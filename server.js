@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = true
+const LOCAL_DEBUG = false
 
 // Express app and Node server
 const express = require('express')
@@ -33,8 +33,6 @@ app.use(csrfMiddleware)
 
 // Setup Firebase API backend
 const serviceAccount = require('./serviceAccountKey.json')
-const { start } = require('repl')
-const { assert } = require('console')
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://mediochat.firebaseio.com'
@@ -186,19 +184,42 @@ app.get('/dashboard', (req, res) => {
 
   // check if logged in
   admin.auth().verifySessionCookie(sessionCookie, true)
-  .then((userData) => {
+  .then(async(userData) => {
     // If authorised, render the view
-    // const userID = userData.uid
-    // get user information from firebase
-    
+    const doctorRef = admin.firestore().collection('users').doc(userData.uid)
     // get list of all rooms where the doctorID matches (for history and upcoming)
+    try {
+      const myCalls = admin.firestore().collection('rooms').where('doctorID', '==', doctorRef)
+      const pastCalls = await myCalls.where('finished', '==', true).orderBy('startsAt').get()
+      // const upcomingCalls = await myCalls.where('startsAt', '>', admin.firestore.Timestamp.fromDate(new Date(Date.now()))).get()
 
-    res.render('dashboard', { csrfToken: req.csrfToken() })
+      const pastCallsList = []
+      pastCalls.forEach(call => {
+        const callData = call.data()
+        const roomData = {
+          roomCode: call.id,
+          startsAt: callData.startsAt.toDate()
+        }
+        pastCallsList.push(roomData)
+      })
+
+      const upcomingCallsList = []
+      // console.log("UPCOMING CALLS =============")
+      // upcomingCalls.forEach(call => {
+      //   console.log(call.id, '=>', call.data())
+      // })
+
+      res.render('dashboard', { csrfToken: req.csrfToken(), callHistory: pastCallsList, upcomingCalls: upcomingCallsList})
+    } catch (error) {
+      res.status(500).send(error)
+    }
+    return
   })
   .catch((error) => {
     res.redirect('/login')
   })
 })
+
 
 // Account and profile settings page
 app.get('/account', (req, res) => {
@@ -206,16 +227,30 @@ app.get('/account', (req, res) => {
 
   // check if logged in
   admin.auth().verifySessionCookie(sessionCookie, true)
-  .then((userData) => {
-    // If authorised, render the view
-    const userID = userData.uid
-    // use this to get user data from firebase
-    res.render('account', {})
+  .then(async(userData) => {
+    try {
+      // Get the user account details from firebase
+      const userRef = admin.firestore().collection('users').doc(`${userData.uid}`)
+      const userDoc = await userRef.get()
+      if (!userDoc.exists) {
+        res.status(500).send("Could not find the user")
+        return
+      }
+      res.render('account', {email: userData.email, userDetails: userDoc.data(), csrfToken: req.csrfToken()})
+    } catch (error) {
+      res.status(500).send("Could not find the user")
+    }
+    return
   })
   .catch((error) => {
     res.redirect('/login')
   })
 })
+
+/*
+  NEED TO MAKE A POST VIEW TO UPDATE USER DETAILS, SHOULD ALSO PROBABLY REFACTOR THE ACCOUNT VIEW BY DIFFERENT PARTS,
+  IE PASSWORD CHANGE IS DIFFERENT TO NAME CHANGE, ETC.
+*/
 
 // Socket Server Events
 io.on('connection', socket => {

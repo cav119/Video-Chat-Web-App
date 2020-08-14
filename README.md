@@ -27,6 +27,8 @@ git push heroku master
 
 
 ## TODO and suggestions
+- joining calls from user's pov needs verification with firebase
+- upcoming calls firebase indexing issue?
 - Improve room UI using the 3rd video on the list below
 - Add a chat to a video room
 - Limit who can join a room using cookies?
