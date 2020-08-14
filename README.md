@@ -27,6 +27,7 @@ git push heroku master
 
 
 ## TODO and suggestions
+- NEED TO CREATE USER DOC ON SIGN UP (NEED TO FIGURE OUT HOW TO DO, maybe under the /signup post?)
 - joining calls from user's pov needs verification with firebase
 - upcoming calls firebase indexing issue?
 - Improve room UI using the 3rd video on the list below
