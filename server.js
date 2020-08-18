@@ -22,6 +22,7 @@ const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const csrfMiddleware = require('csurf')({ cookie: true })
 const admin = require('firebase-admin')
+const crypto = require('crypto')
 
 // Application and external package setup
 app.set('view engine', 'ejs')
@@ -33,6 +34,7 @@ app.use(csrfMiddleware)
 
 // Setup Firebase API backend
 const serviceAccount = require('./serviceAccountKey.json')
+const { firestore } = require('firebase-admin')
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://mediochat.firebaseio.com'
@@ -60,24 +62,48 @@ app.get('/', (req, res) => {
 })
 
 // Patient joins a call after submitting the details form
-app.post('/join-call', (req, res) => {
+app.post('/join-call', async(req, res) => {
   const name = req.body.name;
   const surname = req.body.surname;
   const dob = req.body.dob; // comes in the format YYYY-MM-DD
   const code = req.body.code;
 
-  console.log(name, surname, dob, code)
-  // do validation and check if code is valid (appointment exists in firebase)
-  // should be under the rooms collection, where code is the document ID
-  // ie if code not found or the room is finished, then invalid
+  try {
+    const callQuery = admin.firestore().collection('rooms').doc(code)
+    const call = await callQuery.get()
+    if (call.exists) {
+      if (call.data().finished) {
+        res.status(401).send('This call has already finished (flash to home)')
+        return
+      }
+    } else {
+      res.status(401).send('Invalid access code (need to flash a message to home page)')
+      return
+    }
+  } catch (error) {
+    res.status(500).send('Error occurred: ' + error)
+    return
+  }
 
+  // set a cookie such that a user cannot directly go to /room/code without joining through here
+  const options = { maxAge: 60 * 60 * 1000, httpOnly: true }
+  res.cookie('room', roomCodeHash(code), options)
   res.redirect(`/room/${code}`)
 })
 
 // Enter a room, given its id
 app.get('/room/:room', (req, res) => {
-  res.render('room', { roomId: req.params.room })
+  if (roomCodeHash(req.params.room) == req.cookies.room) {
+    res.render('room', { roomId: req.params.room })
+  } else {
+    res.status(401).send('Unauthorised access: flash to home page (tried to enter thru URL w/o verification on home page)')
+  }
 })
+
+// Helper hash function for room code verification for joining rooms
+roomCodeHash = (roomCode) => {
+  return crypto.createHash('md5').update(roomCode).digest('hex')
+} 
 
 // Creates a call for a doctor: generates code and room
 app.post('/create-call', async(req, res) => {
@@ -125,6 +151,8 @@ app.post('/create-call', async(req, res) => {
 
   // if should start now, go to room, otherwise, back to dashboard
   if (startNow == 'on') {
+    const options = { maxAge: 60 * 60 * 1000 , httpOnly: true }
+    res.cookie('room', roomCodeHash(`${roomCode}`), options)
     res.redirect(`/room/${roomCode}`)
   } else {
     res.redirect('dashboard')
@@ -147,19 +175,38 @@ app.get('/login', (req, res) => {
 // Login process via Firebase (also responsible for logging in after signup)
 app.post('/login', (req, res) => {
   const idToken = req.body.idToken
+  const isSignup = req.body.signup
   
-  // 5 days cookie
-  const expiresIn = 60 * 60 * 24 * 5 * 1000 // time must be in ms
+  // 5 days cookie, in millisecond
+  const expiresIn = 60 * 60 * 24 * 5 * 1000
 
   admin.auth().createSessionCookie(idToken, { expiresIn })
   .then(
-    (sessionCookie) => {
+    async(sessionCookie) => {
+      // get the user id from the idToken and create the user in firebase
+      if (isSignup) {
+        var userID = ''
+        try {
+          const result = await admin.auth().verifySessionCookie(sessionCookie, true)
+          userID = result.uid
+        } catch (error) {
+          res.status(401).send('Unauthorised request')
+          return
+        }
+
+        // create the new user (empty name and surname for now)
+        const newUserRef = admin.firestore().collection('users').doc(`${userID}`)
+        await newUserRef.set({
+          'name': 'Empty name',
+          'surname': 'Empty surname',
+        })
+      }
+
       const options = { maxAge: expiresIn, httpOnly: true }
       res.cookie('session', sessionCookie, options)
       res.end(JSON.stringify({ status: 'success' }))
     },
     (error) => {
-      console.log('error: ', error)
       res.status(401).send("Unauthorised request")
     }
   )
@@ -251,6 +298,7 @@ app.get('/account', (req, res) => {
   NEED TO MAKE A POST VIEW TO UPDATE USER DETAILS, SHOULD ALSO PROBABLY REFACTOR THE ACCOUNT VIEW BY DIFFERENT PARTS,
   IE PASSWORD CHANGE IS DIFFERENT TO NAME CHANGE, ETC.
 */
+
 
 // Socket Server Events
 io.on('connection', socket => {
