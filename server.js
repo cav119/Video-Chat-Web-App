@@ -299,10 +299,12 @@ app.get('/account', (req, res) => {
   IE PASSWORD CHANGE IS DIFFERENT TO NAME CHANGE, ETC.
 */
 
+const users = {}  // global object holding all users (should change later)
 
 // Socket Server Events
 io.on('connection', socket => {
   socket.on('join-room', (roomId, userId) => {
+    users[socket.id] = userId // for the chat
     socket.join(roomId)
     socket.to(roomId).broadcast.emit('user-connected', userId)
 
@@ -310,6 +312,13 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
     })
+  })
+  // socket.on('new-user', name => {
+  //   users[socket.id] = name
+  // })
+  // chat 
+  socket.on('send-chat-message', message => {
+    socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
   })
 })
 

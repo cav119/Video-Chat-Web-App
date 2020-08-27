@@ -14,6 +14,7 @@ const myPeer = new Peer(undefined, LOCAL_DEBUG ? optionsDebug : optionsProductio
 
 const videoGrid = document.getElementById('video-grid')
 const myVideo = document.createElement('video')
+myVideo.className = 'localVideo';
 myVideo.muted = true // mute local video
 
 const peers = {}
@@ -39,12 +40,16 @@ navigator.mediaDevices.getUserMedia({
   // Connect to a new user when they join
   socket.on('user-connected', userId => {
     connectToNewUser(userId, stream)
+    appendMessage(`${userId} has connected`, 1, 1)
   })
 })
 
 // Remove peer object when the disconnect (via the socket)
 socket.on('user-disconnected', userId => {
-  if (peers[userId]) peers[userId].close()
+  if (peers[userId]) {
+    peers[userId].close()
+    appendMessage(`${userId} has disconected`, 1, 1)
+  }
 })
 
 // When the peer connects to the peerJS server
@@ -74,4 +79,62 @@ function addVideoStream(video, stream) {
     video.play()
   })
   videoGrid.append(video)
+}
+
+
+/*********** CHAT ***************/
+
+const messageContainer = document.getElementById('chat')
+const messageForm = document.getElementById('send-container')
+const messageInput = document.getElementById('message-input')
+
+appendMessage('You connected', 0, 1)
+
+socket.on('chat-message', data => {
+  appendMessage(`${data.name} \n ${data.message}`, 1, 0)
+})
+
+
+messageForm.addEventListener('submit', e => {
+  e.preventDefault()
+  const message = messageInput.value
+  document.createElement('user')
+  appendMessage(`You \n ${message}`, 0, 0)
+  socket.emit('send-chat-message', message)
+  messageInput.value = ''
+})
+
+//second argument represents side of chat "left/right" and third represents box size
+function appendMessage(message, side, size) {
+  const messageElement = document.createElement('div')
+  if(side === 0){
+    messageElement.setAttribute("id", "user")
+  } else {
+    messageElement.setAttribute("id", "peer")
+  }
+  if(size === 1){
+    messageElement.style.minHeight = "10px";
+  }
+  messageElement.innerText = message
+  var dt = new Date();
+  //messageElement.innerHTML += "<p><span id=\"datetime\" class=\"time-left\"></span></p>";
+  //messageElement.append(dt.toLocaleTimeString());
+  messageContainer.append(messageElement)
+  messageContainer.scrollBy(0, 100); 
+}
+
+/************ BUTTONS ***************/
+
+function mute() {
+  const peerVideo = document.getElementsByClassName("peerVideo")
+  peerVideo.muted = true;
+  if(peerVideo.muted){
+    peerVideo.muted = false;
+  } else {
+    peerVideo.muted = true;
+  }
+}
+
+function endcall() {
+    
 }

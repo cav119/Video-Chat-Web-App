@@ -29,6 +29,7 @@ git push heroku master
 ## TODO and suggestions
 - upcoming calls firebase indexing issue: FIX, and have a link to start these calls
 - ERROR MESSAGE FLASHING
+- LIMIT number of users in a room to 2 (do it client side or maybe server side)
 - Improve room UI using the 3rd video on the list below
 - Add a chat to a video room
 - Forgot password reset and verify account firebase
