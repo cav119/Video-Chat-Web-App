@@ -32,6 +32,13 @@ app.use(bodyParser.json())
 app.use(cookieParser())
 app.use(csrfMiddleware)
 
+/////////////////
+
+
+app.use(express.static(__dirname));
+
+/////////////
+
 // Setup Firebase API backend
 const serviceAccount = require('./serviceAccountKey.json')
 const { firestore } = require('firebase-admin')
@@ -311,11 +318,12 @@ io.on('connection', socket => {
     // broadcast to the room that a user has disconnected
     socket.on('disconnect', () => {
       socket.to(roomId).broadcast.emit('user-disconnected', userId)
+      delete users[socket.id]
     })
   })
-  // socket.on('new-user', name => {
-  //   users[socket.id] = name
-  // })
+  socket.on('new-user', name => {
+   users[socket.id] = name
+ })
   // chat 
   socket.on('send-chat-message', message => {
     socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
