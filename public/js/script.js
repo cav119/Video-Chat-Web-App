@@ -104,10 +104,12 @@ socket.on('chat-message', data => {
 messageForm.addEventListener('submit', e => {
   e.preventDefault()
   const message = messageInput.value
-  document.createElement('user')
-  appendMessage(`You \n ${message}`, 0, 0)
-  socket.emit('send-chat-message', message)
-  messageInput.value = ''
+  if (message.split(" ").join("") !== ""){
+    document.createElement('user')
+    appendMessage(`You \n ${message}`, 0, 0)
+    socket.emit('send-chat-message', message)
+    messageInput.value = ''
+  }
 })
 
 //second argument represents side of chat "left/right" and third represents box size
