@@ -140,9 +140,11 @@ function mute() {
   } else {
     peerVideo.muted = true;
   }
-  console.log(peerVideo.muted)
 }
 
-function endcall() {
-    
+function endCall() {
+  ///////////////////////////////////
+  //sending info when call ends code/
+  ///////////////////////////////////
+  history.go(-1)
 }
