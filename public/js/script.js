@@ -34,7 +34,7 @@ navigator.mediaDevices.getUserMedia({
   myPeer.on('call', call => {
     call.answer(stream)
     const video = document.createElement('video')
-    video.className = 'peerVideo';
+    video.id = 'peerVideo';
 
     // load the video stream of the user trying to call us on our screen
     call.on('stream', userVideoStream => {
@@ -83,7 +83,7 @@ function addVideoStream(video, stream) {
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })
-  video.className="peerVideo"
+  video.id="peerVideo"
   videoGrid.append(video)
 }
 
@@ -132,12 +132,13 @@ function appendMessage(message, side, size) {
 /************ BUTTONS ***************/
 
 function mute() {
-  const peerVideo = document.getElementsByClassName("peerVideo")
+  const peerVideo = document.getElementById("peerVideo")
   if(peerVideo.muted){
     peerVideo.muted = false;
   } else {
     peerVideo.muted = true;
   }
+  console.log(peerVideo.muted)
 }
 
 function endcall() {
