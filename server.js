@@ -179,6 +179,12 @@ app.get('/login', (req, res) => {
   res.render('login', {})
 })
 
+// Froget password page
+app.get('/forgetPassword', (req, res) => {
+  // should check if already logged in, else just redirect
+  res.render('forgetPassword', {})
+})
+
 // Login process via Firebase (also responsible for logging in after signup)
 app.post('/login', (req, res) => {
   const idToken = req.body.idToken
