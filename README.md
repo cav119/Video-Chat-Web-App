@@ -27,15 +27,15 @@ git push heroku master
 
 
 ## TODO and suggestions
-- upcoming calls firebase indexing issue: FIX, and have a link to start these calls
+- upcoming calls firebase indexing issue: FIX, and have a link to start these calls (and make sure all the cookies are set)
+- GET DOCTOR NAME FROM AUTH RATHER THAN FROM COOKIE ON PREV PAGE: helps avoid setting a cookie for upcoming calls!
 - ERROR MESSAGE FLASHING
 - LIMIT number of users in a room to 2 (do it client side or maybe server side)
-- Improve room UI using the 3rd video on the list below
-- Add a chat to a video room
 - Forgot password reset and verify account firebase
 - Factor out frontend code from login and signup views
 - HIDE serviceAccountKey.json config as an env variable for security on deployment?
 - Need fix that you refresh to see a user joining on heroku version (peerjs or socket related error?)
+- peer JS key for connection?? (need to investigate more)
 - socket.io error on the frontend?
 
 ## Links

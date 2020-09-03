@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = true
+const LOCAL_DEBUG = false
 
 // Express app and Node server
 const express = require('express')
@@ -95,13 +95,17 @@ app.post('/join-call', async(req, res) => {
   // set a cookie such that a user cannot directly go to /room/code without joining through here
   const options = { maxAge: 60 * 60 * 1000, httpOnly: true }
   res.cookie('room', roomCodeHash(code), options)
+  res.cookie('patientName', name + ' ' + surname, options)
   res.redirect(`/room/${code}`)
 })
 
 // Enter a room, given its id
 app.get('/room/:room', (req, res) => {
   if (roomCodeHash(req.params.room) == req.cookies.room) {
-    res.render('room', { roomId: req.params.room })
+    const patientName = req.cookies.patientName
+    const doctorName = req.cookies.doctorName // instead of this, maybe just check if logged in. If so, then it must be a doctor
+    const userType = patientName ? 'patient' : 'doctor'
+    res.render('room', { roomId: req.params.room, userType: userType, patientName: patientName, doctorName: doctorName })
   } else {
     res.status(401).send('Unauthorised access: flash to home page (tried to enter thru URL w/o verification on home page)')
   }
@@ -139,9 +143,9 @@ app.post('/create-call', async(req, res) => {
   }
 
   // create room in firebase
+  const doctorRef = admin.firestore().collection('users').doc(doctorID) // do some validation maybe? not entirely necessary tbh
+  const newRoomRef = admin.firestore().collection('rooms').doc(`${roomCode}`)
   try {
-    const doctorRef = admin.firestore().collection('users').doc(doctorID) // do some validation maybe? not entirely necessary tbh
-    const newRoomRef = admin.firestore().collection('rooms').doc(`${roomCode}`)
     await newRoomRef.set({
       'doctorID': doctorRef,
       'finished': false,
@@ -158,8 +162,12 @@ app.post('/create-call', async(req, res) => {
 
   // if should start now, go to room, otherwise, back to dashboard
   if (startNow == 'on') {
+    const doctor = await doctorRef.get()
+    const doctorData = doctor.data()
+
     const options = { maxAge: 60 * 60 * 1000 , httpOnly: true }
     res.cookie('room', roomCodeHash(`${roomCode}`), options)
+    res.cookie('doctorName', 'Dr. ' + doctorData.name + ' ' + doctorData.surname, options)
     res.redirect(`/room/${roomCode}`)
   } else {
     res.redirect('dashboard')
@@ -316,14 +324,17 @@ const users = {}  // global object holding all users (should change later)
 
 // Socket Server Events
 io.on('connection', socket => {
-  socket.on('join-room', (roomId, userId) => {
-    users[socket.id] = userId // for the chat
+  socket.on('join-room', (roomId, userId, userName) => {
+    users[socket.id] = {
+      userId: userId,
+      userName: userName
+    } // for the chat
     socket.join(roomId)
-    socket.to(roomId).broadcast.emit('user-connected', userId)
+    socket.to(roomId).broadcast.emit('user-connected', userId, userName)
 
     // broadcast to the room that a user has disconnected
     socket.on('disconnect', () => {
-      socket.to(roomId).broadcast.emit('user-disconnected', userId)
+      socket.to(roomId).broadcast.emit('user-disconnected', userId, userName)
       delete users[socket.id]
     })
   })
@@ -332,7 +343,7 @@ io.on('connection', socket => {
  })
   // chat 
   socket.on('send-chat-message', message => {
-    socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
+    socket.broadcast.emit('chat-message', { message: message, name: users[socket.id].userName })
   })
 })
 
