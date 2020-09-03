@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 
 // Express app and Node server
 const express = require('express')
