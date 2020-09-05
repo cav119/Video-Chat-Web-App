@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 
 // Express app and Node server
 const express = require('express')
@@ -103,9 +103,37 @@ app.post('/join-call', async(req, res) => {
 app.get('/room/:room', (req, res) => {
   if (roomCodeHash(req.params.room) == req.cookies.room) {
     const patientName = req.cookies.patientName
-    const doctorName = req.cookies.doctorName // instead of this, maybe just check if logged in. If so, then it must be a doctor
     const userType = patientName ? 'patient' : 'doctor'
-    res.render('room', { roomId: req.params.room, userType: userType, patientName: patientName, doctorName: doctorName })
+    var doctorName = '' 
+
+    // Get doctor data from session cookie
+    admin.auth().verifySessionCookie(req.cookies.session || '', true)
+    .then(async(userData) => {
+      try {
+        // Get the user account details from firebase
+        const userRef = admin.firestore().collection('users').doc(`${userData.uid}`)
+        const userDoc = await userRef.get()
+        if (!userDoc.exists) {
+          res.status(500).send("Could not find the user")
+          return
+        }
+        doctorName = 'Dr.' + userDoc.data().name + ' ' + userDoc.data().surname
+        res.render('room', { roomId: req.params.room, userType: userType, patientName: patientName, doctorName: doctorName })
+
+      } catch (error) {
+        res.status(500).send("Could not find the user")
+        return
+      }
+    })
+    .catch((error) => {
+      // if not doctor nor patient, redirect to home
+      if (patientName === undefined) {
+        res.redirect('/')
+        return
+      }
+      res.render('room', { roomId: req.params.room, userType: userType, patientName: patientName, doctorName: doctorName })
+    })
+    
   } else {
     res.status(401).send('Unauthorised access: flash to home page (tried to enter thru URL w/o verification on home page)')
   }
@@ -142,10 +170,10 @@ app.post('/create-call', async(req, res) => {
     return
   }
 
-  // create room in firebase
-  const doctorRef = admin.firestore().collection('users').doc(doctorID) // do some validation maybe? not entirely necessary tbh
-  const newRoomRef = admin.firestore().collection('rooms').doc(`${roomCode}`)
   try {
+    // create room in firebase
+    const doctorRef = admin.firestore().collection('users').doc(doctorID) // do some validation maybe? not entirely necessary tbh
+    const newRoomRef = admin.firestore().collection('rooms').doc(`${roomCode}`)
     await newRoomRef.set({
       'doctorID': doctorRef,
       'finished': false,
@@ -162,12 +190,8 @@ app.post('/create-call', async(req, res) => {
 
   // if should start now, go to room, otherwise, back to dashboard
   if (startNow == 'on') {
-    const doctor = await doctorRef.get()
-    const doctorData = doctor.data()
-
     const options = { maxAge: 60 * 60 * 1000 , httpOnly: true }
     res.cookie('room', roomCodeHash(`${roomCode}`), options)
-    res.cookie('doctorName', 'Dr. ' + doctorData.name + ' ' + doctorData.surname, options)
     res.redirect(`/room/${roomCode}`)
   } else {
     res.redirect('dashboard')

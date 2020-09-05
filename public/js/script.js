@@ -9,9 +9,10 @@ var optionsProduction = {
   path: '/peer',
   port: 443
 }
-var LOCAL_DEBUG = false
+var LOCAL_DEBUG = true
 const myPeer = new Peer(undefined, LOCAL_DEBUG ? optionsDebug : optionsProduction)
 
+const waitingInfo = document.getElementById("waiting-info")
 const videoGrid = document.getElementById('video-grid')
 const myVideo = document.createElement('video')
 myVideo.className = 'localVideo';

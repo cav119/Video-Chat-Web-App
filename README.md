@@ -26,12 +26,12 @@ git push heroku master
 ```
 
 
-## TODO and suggestions
-- upcoming calls firebase indexing issue: FIX, and have a link to start these calls (and make sure all the cookies are set)
-- GET DOCTOR NAME FROM AUTH RATHER THAN FROM COOKIE ON PREV PAGE: helps avoid setting a cookie for upcoming calls!
-- ERROR MESSAGE FLASHING
+## TODO (by priority)
 - LIMIT number of users in a room to 2 (do it client side or maybe server side)
-- Forgot password reset and verify account firebase
+- Have room code panel at the top, and waiting to connect box on the room UI
+- upcoming calls firebase indexing issue: FIX, and have a link to start these calls (and make sure all the cookies are set)
+- ERROR MESSAGE FLASHING
+- verify account firebase
 - Factor out frontend code from login and signup views
 - HIDE serviceAccountKey.json config as an env variable for security on deployment?
 - Need fix that you refresh to see a user joining on heroku version (peerjs or socket related error?)
