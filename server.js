@@ -1,4 +1,5 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
+const SECRET_KEY = 'hr4lGFD$%gdhfignsd50983htdfsgjkdsfdkls' // hide in env var
 
 // Express app and Node server
 const express = require('express')
@@ -23,25 +24,32 @@ const cookieParser = require('cookie-parser')
 const csrfMiddleware = require('csurf')({ cookie: true })
 const admin = require('firebase-admin')
 const crypto = require('crypto')
+const flash = require('connect-flash')
+const session = require('express-session')
 
 // Application and external package setup
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
-app.use(cookieParser())
+app.use(cookieParser(SECRET_KEY))
 app.use(csrfMiddleware)
 
 /////////////////
 
-
+app.use(session({
+  cookie: { maxAge: 60000 },
+  saveUninitialized: true,
+  resave: 'true',
+  secret: SECRET_KEY
+}))
+app.use(flash())
 app.use(express.static(__dirname));
 
 /////////////
 
 // Setup Firebase API backend
 const serviceAccount = require('./serviceAccountKey.json')
-const { firestore } = require('firebase-admin')
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://mediochat.firebaseio.com'
@@ -63,9 +71,10 @@ app.all('*', (req, res, next) => {
   next()
 })
 
+
 // Home
 app.get('/', (req, res) => {
-  res.render('home', { csrfToken: req.csrfToken() }) // pass in the CSRF token
+  res.render('home', { errorFlash: req.flash('error'), csrfToken: req.csrfToken() })
 })
 
 // Patient joins a call after submitting the details form
@@ -80,15 +89,18 @@ app.post('/join-call', async(req, res) => {
     const call = await callQuery.get()
     if (call.exists) {
       if (call.data().finished) {
-        res.status(401).send('This call has already finished (flash to home)')
+        req.flash('error', 'This call has already finished.')
+        res.redirect('/')
         return
       }
     } else {
-      res.status(401).send('Invalid access code (need to flash a message to home page)')
+      req.flash('error', 'The code you entered is invalid.')
+      res.redirect('/')
       return
     }
   } catch (error) {
-    res.status(500).send('Error occurred: ' + error)
+    req.flash('error', 'An internal server error occurred: ' + error)
+    res.redirect('/')
     return
   }
 
@@ -135,7 +147,8 @@ app.get('/room/:room', (req, res) => {
     })
     
   } else {
-    res.status(401).send('Unauthorised access: flash to home page (tried to enter thru URL w/o verification on home page)')
+    req.flash('error', 'Please complete the verification form on the home page.')
+    res.redirect('/')
   }
 })
 

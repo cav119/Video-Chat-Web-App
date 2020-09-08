@@ -16,6 +16,15 @@
             <div class="intro">
                 <p class="text-center"><img class="img-fluid" src="img/logo.png"></p>
                 <p class="text-center" style="color:rgb(0,0,0);">Enter the access code provided by your health consultant to start a video call with them</p>
+                <% if (errorFlash != "") { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" 
+                    style="margin: 0 auto; width: 80%; text-align: center">
+                    <%= errorFlash %>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <% } %>
             </div>
             <form class="form-inline" id="accessCodeForm">
                 <div class="form-group">
