@@ -1,5 +1,5 @@
-const LOCAL_DEBUG = true
-const SECRET_KEY = 'hr4lGFD$%gdhfignsd50983htdfsgjkdsfdkls' // hide in env var
+const LOCAL_DEBUG = false
+const SECRET_KEY = process.env.SECRET || 'hr4lGFD$%gdhfignsd50983htdfsgjkdsfdkls' // hide in env var
 
 // Express app and Node server
 const express = require('express')
@@ -126,14 +126,14 @@ app.get('/room/:room', (req, res) => {
         const userRef = admin.firestore().collection('users').doc(`${userData.uid}`)
         const userDoc = await userRef.get()
         if (!userDoc.exists) {
-          res.status(500).send("Could not find the user")
+          res.status(500).send("Internal server error: Could not find the logged in user")
           return
         }
         doctorName = 'Dr.' + userDoc.data().name + ' ' + userDoc.data().surname
         res.render('room', { roomId: req.params.room, userType: userType, patientName: patientName, doctorName: doctorName })
 
       } catch (error) {
-        res.status(500).send("Could not find the user")
+        res.status(500).send("Internal server error: Could not find the logged in user")
         return
       }
     })
@@ -166,7 +166,7 @@ app.post('/create-call', async(req, res) => {
     const result = await admin.auth().verifySessionCookie(req.cookies.session || '', true)
     doctorID = result.uid
   } catch (error) {
-    res.status(401).send('Unauthorised request')
+    res.status(401).send('Unauthorised request: user is not logged in')
     return
   }
 
@@ -211,6 +211,26 @@ app.post('/create-call', async(req, res) => {
   }
 })
 
+app.post('/end-call', async(req, res) => {
+  const roomId = req.body.roomId
+  if (roomCodeHash(roomId) == req.cookies.room) { 
+    try {
+      // set the room as finished
+      const roomRef = admin.firestore().collection('rooms').doc(`${roomId}`)
+      await roomRef.update({ finished: true })
+    } catch (error) {
+      console.log("ERROR: ", error)
+      res.status(401).send()
+      return
+    }
+
+    res.clearCookie('room')
+    res.status(200).send()
+    return
+  }
+  res.status(401).send()
+})
+
 
 // Signup page
 app.get('/signup', (req, res) => {
@@ -225,9 +245,9 @@ app.get('/login', (req, res) => {
 })
 
 // Froget password page
-app.get('/forgetPassword', (req, res) => {
+app.get('/forgot-password', (req, res) => {
   // should check if already logged in, else just redirect
-  res.render('forgetPassword', {})
+  res.render('forgotPassword', {})
 })
 
 // Login process via Firebase (also responsible for logging in after signup)

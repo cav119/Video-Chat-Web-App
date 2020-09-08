@@ -9,7 +9,7 @@ var optionsProduction = {
   path: '/peer',
   port: 443
 }
-var LOCAL_DEBUG = true
+var LOCAL_DEBUG = false
 const myPeer = new Peer(undefined, LOCAL_DEBUG ? optionsDebug : optionsProduction)
 
 const waitingInfo = document.getElementById("waiting-info")
@@ -147,9 +147,24 @@ function mute() {
   }
 }
 
-function endCall() {
-  ///////////////////////////////////
-  //sending info when call ends code/
-  ///////////////////////////////////
-  history.go(-1)
+async function endCall() {
+  if (USER_TYPE == 'patient') {
+    window.location.assign('/');
+    return;
+  }
+
+  // call ended by doctor
+  const response = await fetch('/end-call', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'CSRF-Token': Cookies.get('XSRF-TOKEN'),
+    },
+    body: JSON.stringify({ roomId: ROOM_ID }),
+  });
+
+  if (response.status == 200) {
+    window.location.assign('/dashboard');
+  }
 }
