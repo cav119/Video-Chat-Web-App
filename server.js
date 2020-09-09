@@ -257,16 +257,20 @@ app.post('/login', (req, res) => {
   
   // 5 days cookie, in millisecond
   const expiresIn = 60 * 60 * 24 * 5 * 1000
+  const options = { maxAge: expiresIn, httpOnly: true }
 
   admin.auth().createSessionCookie(idToken, { expiresIn })
   .then(
     async(sessionCookie) => {
       // get the user id from the idToken and create the user in firebase
       if (isSignup) {
+        const name = req.body.name
+        const surname = req.body.surname
+
         var userID = ''
         try {
           const result = await admin.auth().verifySessionCookie(sessionCookie, true)
-          userID = result.uid
+          userID = result.uid // the user's id in firebase
         } catch (error) {
           res.status(401).send('Unauthorised request')
           return
@@ -275,12 +279,11 @@ app.post('/login', (req, res) => {
         // create the new user (empty name and surname for now)
         const newUserRef = admin.firestore().collection('users').doc(`${userID}`)
         await newUserRef.set({
-          'name': 'Empty name',
-          'surname': 'Empty surname',
+          'name': name,
+          'surname': surname,
         })
       }
 
-      const options = { maxAge: expiresIn, httpOnly: true }
       res.cookie('session', sessionCookie, options)
       res.end(JSON.stringify({ status: 'success' }))
     },
@@ -305,9 +308,9 @@ app.get('/logout', (req, res) => {
 
 // Doctor call dashboard
 app.get('/dashboard', (req, res) => {
-  const sessionCookie = req.cookies.session || ''
 
   // check if logged in
+  const sessionCookie = req.cookies.session || ''
   admin.auth().verifySessionCookie(sessionCookie, true)
   .then(async(userData) => {
     // If authorised, render the view
@@ -348,9 +351,8 @@ app.get('/dashboard', (req, res) => {
 
 // Account and profile settings page
 app.get('/account', (req, res) => {
-  const sessionCookie = req.cookies.session || ''
-
   // check if logged in
+  const sessionCookie = req.cookies.session || ''
   admin.auth().verifySessionCookie(sessionCookie, true)
   .then(async(userData) => {
     try {
@@ -361,6 +363,7 @@ app.get('/account', (req, res) => {
         res.status(500).send("Could not find the user")
         return
       }
+
       res.render('account', {email: userData.email, userDetails: userDoc.data(), csrfToken: req.csrfToken()})
     } catch (error) {
       res.status(500).send("Could not find the user")

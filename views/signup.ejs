@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-auth.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js" defer></script>
 </head>
 
 <body style="background-color:rgb(241,247,252);">
@@ -31,6 +32,17 @@
             
             <span id="message"></span>
 
+            <div id="personalDetails">
+                <hr style="background-color: #848484; font-size: 18px;">
+                <p style="text-align: center">Personal Details</p>
+                <div class="form-group">
+                    <input class="form-control" id="name" type="text" name="name" placeholder="Name" style="color:rgb(0,0,0);" required>
+                </div>
+                <div class="form-group">
+                    <input class="form-control" id="surname" type="text" name="surname" placeholder="Surname" style="color:rgb(0,0,0);" required>
+                </div>
+            </div>
+
             <div class="form-group">
                 <button id="submitButton" class="btn btn-primary btn-block" type="submit" style="background-color:rgb(5,90,218);">Sign Up</button>
             </div>
@@ -41,16 +53,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // PASSWORD STRENGTH CHECK, MATCHING CHECK, ETC...
         $('#pass, #confirm').on('keyup', function () {
-
             var passW = $('#pass').val();
-
             var incorrectPass = "Passwords must be at least 8 characters long and contain a combination \
             of uppercase, lowercase, numbers and a symbol";
 
             const specialSymbols = '!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~';
-
             const atLeastOneCharAndNumAndSymbol = passW => {
                 let numFound = false;
                 let charFound = false; 
@@ -69,10 +77,8 @@
                     }
                 } 
 
-            return numFound && charFound && symbFound;
+                return numFound && charFound && symbFound;
             }
-
-            console.log(atLeastOneCharAndNumAndSymbol(passW));
 
             if(passW.length < 8 || passW.toUpperCase() === passW || passW.toLowerCase() === passW 
                 || !atLeastOneCharAndNumAndSymbol(passW)) {
@@ -81,15 +87,18 @@
             } else if ($('#pass').val() == $('#confirm').val()) {
                 $('#message').html('').css('color', 'green');
                 $('#submitButton').prop('disabled', false);
+                $("#personalDetails").show();
             } else {
-            $('#message').html('Passwords do not match').css('color', 'red');
-            $('#submitButton').prop('disabled', true);
+                $('#message').html('Passwords do not match').css('color', 'red');
+                $('#submitButton').prop('disabled', true);
             }
         });
     </script>
 
     <script>
         window.addEventListener("DOMContentLoaded", () => {
+            $("#personalDetails").hide();
+
             const firebaseConfig = {
                 apiKey: "AIzaSyDqDK3dcjAfqSStCPLDdGoOEuV4rKr3baU",
                 authDomain: "mediochat.firebaseapp.com",
@@ -106,8 +115,15 @@
 
             $("#signup").on("submit", (event) => {
                 event.preventDefault(); 
+                $.LoadingOverlay('show', {
+                    imageColor: "rgb(5,90,218)",
+
+                });
+
                 const email = event.target.email.value;
                 const password = event.target.password.value;
+                const name = event.target.name.value;
+                const surname = event.target.surname.value;
                 
                 firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then(({ user }) => {
@@ -119,7 +135,7 @@
                                 'Content-Type': 'application/json',
                                 'CSRF-Token': Cookies.get('XSRF-TOKEN'),
                             },
-                            body: JSON.stringify({ idToken, signup: true }),
+                            body: JSON.stringify({ idToken, signup: true, name, surname }),
                         });
                     });
                 })
@@ -130,6 +146,7 @@
                     window.location.assign('/dashboard');
                 })
                 .catch((error) => {
+                    $.LoadingOverlay('hide');
                     $('#message').html(error.message).css('color', 'red');
                 });
                 return false;
