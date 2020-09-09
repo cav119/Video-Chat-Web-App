@@ -29,13 +29,12 @@ git push heroku master
 ## TODO (by priority)
 - LIMIT number of users in a room to 2 (do it client side or maybe server side)
 - Have room code panel at the top, and waiting to connect box on the room UI
-- upcoming calls firebase indexing issue: FIX, and have a link to start these calls (and make sure all the cookies are set)
+- upcoming calls: show time remaining and link to start these calls (and make sure all the cookies are set)
 - verify account firebase
 - Factor out frontend code from login and signup views
 - HIDE serviceAccountKey.json config as an env variable for security on deployment?
 - Need fix that you refresh to see a user joining on heroku version (peerjs or socket related error?)
 - peer JS key for connection?? (need to investigate more)
-- socket.io error on the frontend?
 
 ## Links
 - [Original video: How to make a Zoom clone](https://www.youtube.com/watch?v=DvlyzDZDEq4)
