@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = true
+const LOCAL_DEBUG = false
 const SECRET_KEY = process.env.SECRET || 'hr4lGFD$%gdhfignsd50983htdfsgjkdsfdkls' // hide in env var
 
 // Express app and Node server
@@ -237,17 +237,23 @@ app.get('/signup', (req, res) => {
   res.render('signup', {})
 })
 
-
-// Login page
-app.get('/login', (req, res) => {
-  // should check if already logged in, else just redirect
-  res.render('login', {})
-})
-
-// Froget password page
+// Forgot password page
 app.get('/forgot-password', (req, res) => {
   // should check if already logged in, else just redirect
   res.render('forgotPassword', {})
+})
+
+// Login page
+app.get('/login', (req, res) => {
+  // If logged in, redirect to dashboard.
+  admin.auth().verifySessionCookie(req.cookies.session || '', true)
+  .then(() => {
+    res.redirect('/dashboard')
+  })
+  // Otherwise, render the login page
+  .catch((error) => {
+    res.render('login', {})
+  })
 })
 
 // Login process via Firebase (also responsible for logging in after signup)
@@ -318,8 +324,8 @@ app.get('/dashboard', (req, res) => {
     // get list of all rooms where the doctorID matches (for history and upcoming)
     try {
       const myCalls = admin.firestore().collection('rooms').where('doctorID', '==', doctorRef)
-      const pastCalls = await myCalls.where('finished', '==', true).orderBy('startsAt').get()
-      // const upcomingCalls = await myCalls.where('startsAt', '>', admin.firestore.Timestamp.fromDate(new Date(Date.now()))).get()
+      const pastCalls = await myCalls.where('finished', '==', true).orderBy('startsAt', 'desc').get()
+      const upcomingCalls = await myCalls.where('startsAt', '>', admin.firestore.Timestamp.fromDate(new Date(Date.now()))).get()
 
       const pastCallsList = []
       pastCalls.forEach(call => {
@@ -332,10 +338,14 @@ app.get('/dashboard', (req, res) => {
       })
 
       const upcomingCallsList = []
-      // console.log("UPCOMING CALLS =============")
-      // upcomingCalls.forEach(call => {
-      //   console.log(call.id, '=>', call.data())
-      // })
+      upcomingCalls.forEach(call => {
+        const callData = call.data()
+        const roomData = {
+          roomCode: call.id,
+          startsAt: callData.startsAt.toDate()
+        }
+        upcomingCallsList.push(roomData)
+      })
 
       res.render('dashboard', { csrfToken: req.csrfToken(), callHistory: pastCallsList, upcomingCalls: upcomingCallsList})
     } catch (error) {
