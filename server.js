@@ -111,6 +111,33 @@ app.post('/join-call', async(req, res) => {
   res.redirect(`/room/${code}`)
 })
 
+// Start an upcoming call from a doctor's dashboard
+app.get('/start-call/:room', async(req, res) => {
+  const roomCode = req.params.room
+
+  // check that the call hasn't already finished
+  try {
+    const callQuery = admin.firestore().collection('rooms').doc(roomCode)
+    const call = await callQuery.get()
+    if (call.exists) {
+      if (call.data().finished) {
+        res.redirect('/dashboard')
+        return
+      }
+    } else {
+      res.redirect('/dashboard')
+      return
+    }
+  } catch (error) {
+    res.redirect('/dashboard')
+    return
+  }
+
+  const options = { maxAge: 60 * 60 * 1000 , httpOnly: true }
+  res.cookie('room', roomCodeHash(`${roomCode}`), options)
+  res.redirect(`/room/${roomCode}`)
+})
+
 // Enter a room, given its id
 app.get('/room/:room', (req, res) => {
   if (roomCodeHash(req.params.room) == req.cookies.room) {
@@ -326,6 +353,10 @@ app.get('/dashboard', (req, res) => {
       const myCalls = admin.firestore().collection('rooms').where('doctorID', '==', doctorRef)
       const pastCalls = await myCalls.where('finished', '==', true).orderBy('startsAt', 'desc').get()
       const upcomingCalls = await myCalls.where('startsAt', '>', admin.firestore.Timestamp.fromDate(new Date(Date.now()))).get()
+      // should also add .where('finished', '==', false) in upcoming, ie: if user starts before time and then finishes, it still appears
+
+      // need to make a todaysCalls query on its own because if it goes 1 second overtime, it no longer appears
+      // in upcomingCalls. (include a threshold? or just show all of today's calls, including past/finished ones)
 
       const pastCallsList = []
       pastCalls.forEach(call => {
@@ -337,17 +368,26 @@ app.get('/dashboard', (req, res) => {
         pastCallsList.push(roomData)
       })
 
+      
       const upcomingCallsList = []
+      const todaysCallsList = []
+
+      const today = new Date()
       upcomingCalls.forEach(call => {
         const callData = call.data()
         const roomData = {
           roomCode: call.id,
           startsAt: callData.startsAt.toDate()
         }
-        upcomingCallsList.push(roomData)
+        if (roomData.startsAt.toDateString() == today.toDateString()) {
+          todaysCallsList.push(roomData)
+        } else {
+          upcomingCallsList.push(roomData)
+        }
       })
 
-      res.render('dashboard', { csrfToken: req.csrfToken(), callHistory: pastCallsList, upcomingCalls: upcomingCallsList})
+      res.render('dashboard', { csrfToken: req.csrfToken(), callHistory: pastCallsList, 
+                                upcomingCalls: upcomingCallsList, todaysCalls: todaysCallsList})
     } catch (error) {
       res.status(500).send(error)
     }
