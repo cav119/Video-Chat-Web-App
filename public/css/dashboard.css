@@ -1,0 +1,49 @@
+@-webkit-keyframes startingSoon {
+    from { background-color: rgb(254, 220, 136); }
+    to { background-color: inherit; }
+}
+@-moz-keyframes startingSoon {
+    from { background-color: rgb(254, 220, 136); }
+    to { background-color: inherit; }
+}
+@-o-keyframes startingSoon {
+    from { background-color: rgb(254, 220, 136); }
+    to { background-color: inherit; }
+}
+@keyframes startingSoon {
+    from { background-color: rgb(254, 220, 136); }
+    to { background-color: inherit; }
+}
+.startingSoon {
+    -webkit-animation: startingSoon 2s infinite; /* Safari 4+ */
+    -moz-animation:    startingSoon 2s infinite; /* Fx 5+ */
+    -o-animation:      startingSoon 2s infinite; /* Opera 12+ */
+    animation:         startingSoon 2s infinite; /* IE 10+ */
+}
+@-webkit-keyframes late {
+    from { background-color: rgb(255, 123, 113); }
+    to { background-color: inherit; }
+}
+@-moz-keyframes late {
+    from { background-color: rgb(255, 123, 113); }
+    to { background-color: inherit; }
+}
+@-o-keyframes late {
+    from { background-color: rgb(255, 123, 113); }
+    to { background-color: inherit; }
+}
+@keyframes late {
+    from { background-color: rgb(255, 123, 113); }
+    to { background-color: inherit; }
+}
+.late {
+    -webkit-animation: late 2s infinite; /* Safari 4+ */
+    -moz-animation:    late 2s infinite; /* Fx 5+ */
+    -o-animation:      late 2s infinite; /* Opera 12+ */
+    animation:         late 2s infinite; /* IE 10+ */
+}
+
+.finished {
+    background-color: #ccced0;
+    color: #676767;
+}

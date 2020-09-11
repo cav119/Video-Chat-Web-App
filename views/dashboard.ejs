@@ -8,31 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/styles.min.css">
+    <link rel="stylesheet" href="css/dashboard.css">
 
-    <style>
-        @-webkit-keyframes startingSoon {
-            from { background-color: rgb(254, 220, 136); }
-            to { background-color: inherit; }
-        }
-        @-moz-keyframes startingSoon {
-            from { background-color: rgb(254, 220, 136); }
-            to { background-color: inherit; }
-        }
-        @-o-keyframes startingSoon {
-            from { background-color: rgb(254, 220, 136); }
-            to { background-color: inherit; }
-        }
-        @keyframes startingSoon {
-            from { background-color: rgb(254, 220, 136); }
-            to { background-color: inherit; }
-        }
-        .startingSoon {
-            -webkit-animation: startingSoon 2s infinite; /* Safari 4+ */
-            -moz-animation:    startingSoon 2s infinite; /* Fx 5+ */
-            -o-animation:      startingSoon 2s infinite; /* Opera 12+ */
-            animation:         startingSoon 2s infinite; /* IE 10+ */
-        }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
 
 <body>
@@ -168,12 +146,21 @@
     <!-- Today's Calls -->
     <div>
         <div class="container">
+            <% if (errorFlash != "") { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" 
+                style="margin: 0 auto; margin-bottom: 30px; width: 80%; text-align: center">
+                <%= errorFlash %>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <% } %>
             <div class="row">
                 <div class="col-md-12">
-                    <h4 class="text-center" style="margin-bottom: 15px;">Today's Scheduled Calls</h4>
                     <% if (todaysCalls.length > 0) { %>
+                        <h4 class="text-center" style="margin-bottom: 15px;">Today's Scheduled Calls</h4>
                         <div class="table-responsive table-bordered">
-                            <table class="table table-striped table-bordered">
+                            <table class="table table-bordered">
                                 <thead>
                                     <tr>
                                         <th class="table-info">Call ID</th>
@@ -187,7 +174,7 @@
                                         <tr>
                                             <td><%= call.roomCode %></td>
                                             <td><%= call.startsAt.toLocaleTimeString() %></td>
-                                            <td data-callTime="<%= call.startsAt %>"></td>
+                                            <td data-finished="<%= call.finished %>" data-callTime="<%= call.startsAt %>"></td>
                                             <td><a class="btn btn-info btn-block btn-sm" role="button" 
                                                 href="/start-call/<%= call.roomCode %>">Start Now</a>
                                             </td>
@@ -195,40 +182,120 @@
                                     <%}%>
                                 </tbody>
                             </table>
-                            <script>
-                                function updateTimeLeft() {
-                                    $("#todaysCallsTableBody").find('tr').each(function (i, el) {
-                                        const timeCell = $(this).find('td').eq(2)[0]
-                                        var callTime = Date.parse(timeCell.getAttribute('data-callTime'))
-                                                                                
-                                        const timeLeft = callTime - Date.parse(new Date());
-                                        // disappears on refresh, need to implement a threshold
-                                        if (timeLeft < 0) {
-                                            $(this).addClass('startingSoon')
-                                            timeCell.innerHTML = "<b>Starting now</b>"
+                        </div>
+
+                        
+
+                        <div style="margin-top: 10px;">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="hideFinishedCheck">
+                                <label class="custom-control-label" for="hideFinishedCheck">Hide finished calls?</label>
+                            </div>
+
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="flashingCheck">
+                                <label class="custom-control-label" for="flashingCheck">Don't flash calls?</label>
+                            </div>
+                        </div>
+
+                        <script>
+
+                            // only takes effect during the refresh period... need to fix somehow
+                            var shouldHideFinishedCalls = false // store these settings is cookies?
+                            var shouldNotFlashCalls = false
+
+                            $('#hideFinishedCheck').on('change', evt => {
+                                if ($(evt.target).is(':checked')) {
+                                    shouldHideFinishedCalls = true
+                                } else {
+                                    shouldHideFinishedCalls = false
+                                }
+                            })
+
+                            $('#flashingCheck').on('change', evt => {
+                                if ($(evt.target).is(':checked')) {
+                                    shouldNotFlashCalls = true
+                                } else {
+                                    shouldNotFlashCalls = false
+                                }
+                            })
+                            
+                            function updateTimeLeft() {
+                                $("#todaysCallsTableBody").find('tr').each(function (i, el) {
+                                    const timeCell = $(this).find('td').eq(2)[0]
+                                    const callTime = Date.parse(timeCell.getAttribute('data-callTime'))
+                                    const isFinished = timeCell.getAttribute('data-finished') == 'true'                                        
+                                
+                                    const timeLeft = callTime - Date.parse(new Date());
+                                    if (timeLeft < 0) {
+                                        if (!isFinished) {  // passed time but not finished
+
+                                            // Over time threshold message: show between 2 and 10 mins overtime
+                                            var secondsAgo = -timeLeft / 1000
+                                            var minsAgo = Math.floor(secondsAgo / 60);
+                                            var isLate = false
+
+                                            const MIN_THRESHOLD = 2 * 60
+                                            const MAX_THRESHOLD = 10 * 60
+                                            if (secondsAgo >= MIN_THRESHOLD && secondsAgo <= MAX_THRESHOLD) {
+                                                timeCell.innerHTML = "<b>" + minsAgo + " m, " + secondsAgo - minsAgo * 60 + "s ago" + "</b>"
+                                            } else if (secondsAgo > MAX_THRESHOLD) { // over 10 mins
+                                                isLate = true
+                                                timeCell.innerHTML = "<b>You are late to this call (by " + minsAgo + "mins)" + "</b>"
+                                            } else { // if under 2 mins, still 'starting now'
+                                                timeCell.innerHTML = "<b>Starting now</b>"
+                                            }
+
+                                            if (!shouldNotFlashCalls) {
+                                                if (isLate) {
+                                                    $(this).addClass('late')
+                                                } else {
+                                                    $(this).addClass('startingSoon')
+                                                }
+                                            } else {
+                                                $(this).removeClass('startingSoon')
+                                                $(this).removeClass('late')
+                                            }
+                                            return
+
+                                        } else {    // passed time and already finished
+                                            if (shouldHideFinishedCalls) {
+                                                $(this).hide()
+                                            } else {
+                                                $(this).show()
+                                                $(this).addClass('finished') // grey out the row
+                                                $(this).find('td').eq(3).first('a').html("") // remove link
+                                                timeCell.innerHTML = "This call has already finished"
+                                            }
                                             return
                                         }
+                                    }
 
-                                        const seconds = Math.floor( (timeLeft/1000) % 60 );
-                                        const minutes = Math.floor( (timeLeft/1000/60) % 60 );
-                                        const hours = Math.floor( (timeLeft/(1000*60*60)) % 24 );
-                                        const text = (hours != 0 ? hours + ' hrs' : '') + ' ' + (minutes != 0 ? minutes + ' mins' : '')
-                                        // if less than 1 min remaining
-                                        if (text == ' ') {
+                                    // time remaining unit calculations
+                                    const seconds = Math.floor( (timeLeft/1000) % 60 );
+                                    const minutes = Math.floor( (timeLeft/1000/60) % 60 );
+                                    const hours = Math.floor( (timeLeft/(1000*60*60)) % 24 );
+                                    const text = (hours != 0 ? hours + ' hrs' : '') + ' ' + (minutes != 0 ? minutes + ' mins' : '')
+                                    
+                                    // if less than 1 min remaining
+                                    if (text == ' ') {
+                                        if (!shouldNotFlashCalls) {
                                             $(this).addClass('startingSoon')
-                                            timeCell.innerHTML = "<b>Starting now</b>"
-                                            return
-                                        }                                       
-                                        timeCell.innerHTML = text
-                                    })
-                                }
+                                        } else {
+                                            $(this).removeClass('startingSoon')
+                                        }
+                                        timeCell.innerHTML = "<b>Starting now</b>"
+                                        return
+                                    }                                       
+                                    timeCell.innerHTML = text
+                                })
+                            }
 
-                                window.addEventListener("DOMContentLoaded", updateTimeLeft)
-                                setInterval(updateTimeLeft, 1000 * 60)
-                            </script>
-                        </div>
+                            window.addEventListener("DOMContentLoaded", updateTimeLeft)
+                            setInterval(updateTimeLeft, 1000 * 1)   // revert to 30s once checkboxes work independently
+                        </script>
                     <%} else {%>
-                        <h5 class="text-center">You haven't got any upcoming scheduled calls.</h5>
+                        <h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>
                     <%}%>
                 </div>
             </div>
@@ -240,8 +307,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <h4 class="text-center" style="margin-bottom: 15px;">Upcoming Calls</h4>
                     <% if (upcomingCalls.length > 0) { %>
+                        <h4 class="text-center" style="margin-bottom: 15px;">Upcoming Calls</h4>
                         <div class="table-responsive table-bordered">
                             <table class="table table-striped table-bordered table-sm">
                                 <thead>
@@ -307,7 +374,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
     <script src="js/dashboard.min.js"></script>
 

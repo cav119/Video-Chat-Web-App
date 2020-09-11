@@ -115,27 +115,39 @@ app.post('/join-call', async(req, res) => {
 app.get('/start-call/:room', async(req, res) => {
   const roomCode = req.params.room
 
-  // check that the call hasn't already finished
-  try {
-    const callQuery = admin.firestore().collection('rooms').doc(roomCode)
-    const call = await callQuery.get()
-    if (call.exists) {
-      if (call.data().finished) {
+  admin.auth().verifySessionCookie(req.cookies.session || '', true)
+  .then(async(userData) => {
+    try {
+      // Get the user account details from firebase
+      const userRef = admin.firestore().collection('users').doc(`${userData.uid}`)
+      const callQuery = admin.firestore().collection('rooms').doc(roomCode)
+      const call = await callQuery.get()
+      if (call.exists) {
+        // check that the call hasn't finished and that the call creator is the logged in user
+        if (call.data().finished || !call.data().doctorID.isEqual(userRef)) {
+          req.flash('error', 'The call you tried to access has either finished or could not be found.')
+          res.redirect('/dashboard')
+          return
+        }
+
+        const options = { maxAge: 60 * 60 * 1000 , httpOnly: true }
+        res.cookie('room', roomCodeHash(`${roomCode}`), options)
+        res.redirect(`/room/${roomCode}`)
+
+      } else {
+        req.flash('error', 'The call you tried to access could not be found.')
         res.redirect('/dashboard')
         return
       }
-    } else {
-      res.redirect('/dashboard')
+    } catch (error) {
+      res.status(500).send("Internal server error: Could not find the logged in user")
       return
     }
-  } catch (error) {
-    res.redirect('/dashboard')
+  })
+  .catch((error) => {
+    res.status(500).send("Internal server error: Could not find the logged in user")
     return
-  }
-
-  const options = { maxAge: 60 * 60 * 1000 , httpOnly: true }
-  res.cookie('room', roomCodeHash(`${roomCode}`), options)
-  res.redirect(`/room/${roomCode}`)
+  })
 })
 
 // Enter a room, given its id
@@ -238,6 +250,7 @@ app.post('/create-call', async(req, res) => {
   }
 })
 
+// Mark the call as ended when the 'end call' is pressed by the doctor
 app.post('/end-call', async(req, res) => {
   const roomId = req.body.roomId
   if (roomCodeHash(roomId) == req.cookies.room) { 
@@ -346,29 +359,33 @@ app.get('/dashboard', (req, res) => {
   const sessionCookie = req.cookies.session || ''
   admin.auth().verifySessionCookie(sessionCookie, true)
   .then(async(userData) => {
-    // If authorised, render the view
+    
     const doctorRef = admin.firestore().collection('users').doc(userData.uid)
-    // get list of all rooms where the doctorID matches (for history and upcoming)
     try {
-      const myCalls = admin.firestore().collection('rooms').where('doctorID', '==', doctorRef)
-      const pastCalls = await myCalls.where('finished', '==', true).orderBy('startsAt', 'desc').get()
-      const upcomingCalls = await myCalls.where('startsAt', '>', admin.firestore.Timestamp.fromDate(new Date(Date.now()))).get()
-      // should also add .where('finished', '==', false) in upcoming, ie: if user starts before time and then finishes, it still appears
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
 
-      // need to make a todaysCalls query on its own because if it goes 1 second overtime, it no longer appears
-      // in upcomingCalls. (include a threshold? or just show all of today's calls, including past/finished ones)
+      const myCalls = admin.firestore().collection('rooms').where('doctorID', '==', doctorRef)
+      // const pastCalls = await myCalls.where('finished', '==', true).orderBy('startsAt', 'desc').get() // separate view?
+      const upcomingCalls = await myCalls.where('startsAt', '>', admin.firestore.Timestamp.fromDate(yesterday)).get()
+
+      /*
+        PAST CALLS (KEEP AS IS)
+        UPCOMING CALLS (FINISHED = FALSE AND STARTS AT > TODAY)
+        TODAYS CALLS (STARTS AT DATE = TODAY) // also includes finished calls on the day (strikethrough)
+        // not sure how to do in firebase, current version works but not as efficient as it includes yesterdays calls
+      */
 
       const pastCallsList = []
-      pastCalls.forEach(call => {
-        const callData = call.data()
-        const roomData = {
-          roomCode: call.id,
-          startsAt: callData.startsAt.toDate()
-        }
-        pastCallsList.push(roomData)
-      })
+      // pastCalls.forEach(call => {
+      //   const callData = call.data()
+      //   const roomData = {
+      //     roomCode: call.id,
+      //     startsAt: callData.startsAt.toDate()
+      //   }
+      //   pastCallsList.push(roomData)
+      // })
 
-      
       const upcomingCallsList = []
       const todaysCallsList = []
 
@@ -376,19 +393,25 @@ app.get('/dashboard', (req, res) => {
       upcomingCalls.forEach(call => {
         const callData = call.data()
         const roomData = {
-          roomCode: call.id,
-          startsAt: callData.startsAt.toDate()
+          'roomCode': call.id,
+          'startsAt': callData.startsAt.toDate()
         }
+        // if today's date matches, add to today's list
         if (roomData.startsAt.toDateString() == today.toDateString()) {
+          roomData['finished'] = callData.finished  // add finished field to today's calls list
           todaysCallsList.push(roomData)
-        } else {
+        // if not finished and date is after today, then put in upcoming list
+        } else if (!callData.finished && roomData.startsAt > today) {
           upcomingCallsList.push(roomData)
         }
+        // ignore if it is finished and not today
       })
 
-      res.render('dashboard', { csrfToken: req.csrfToken(), callHistory: pastCallsList, 
-                                upcomingCalls: upcomingCallsList, todaysCalls: todaysCallsList})
+      res.render('dashboard', { csrfToken: req.csrfToken(), errorFlash: req.flash('error'),
+                                callHistory: pastCallsList, upcomingCalls: upcomingCallsList, 
+                                todaysCalls: todaysCallsList })
     } catch (error) {
+      console.log(error)
       res.status(500).send(error)
     }
     return
