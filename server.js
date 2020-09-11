@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'hr4lGFD$%gdhfignsd50983htdfsgjkdsfdkls' // hide in env var
 
 // Express app and Node server
@@ -359,7 +359,7 @@ app.get('/dashboard', (req, res) => {
   const sessionCookie = req.cookies.session || ''
   admin.auth().verifySessionCookie(sessionCookie, true)
   .then(async(userData) => {
-
+    
     const doctorRef = admin.firestore().collection('users').doc(userData.uid)
     try {
       const yesterday = new Date()

@@ -238,10 +238,10 @@
                                             const MIN_THRESHOLD = 2 * 60
                                             const MAX_THRESHOLD = 10 * 60
                                             if (secondsAgo >= MIN_THRESHOLD && secondsAgo <= MAX_THRESHOLD) {
-                                                timeCell.innerHTML = "<b>" + minsAgo + " m, " + secondsAgo - minsAgo * 60 + "s ago" + "</b>"
+                                                timeCell.innerHTML = "<b>Scheduled for " + minsAgo.toString() + "m " + (secondsAgo - minsAgo * 60).toString() + "s ago" + "</b>"
                                             } else if (secondsAgo > MAX_THRESHOLD) { // over 10 mins
                                                 isLate = true
-                                                timeCell.innerHTML = "<b>You are late to this call (by " + minsAgo + "mins)" + "</b>"
+                                                timeCell.innerHTML = "<b>You are late to this call (by " + minsAgo + " mins)" + "</b>"
                                             } else { // if under 2 mins, still 'starting now'
                                                 timeCell.innerHTML = "<b>Starting now</b>"
                                             }
@@ -275,10 +275,10 @@
                                     const seconds = Math.floor( (timeLeft/1000) % 60 );
                                     const minutes = Math.floor( (timeLeft/1000/60) % 60 );
                                     const hours = Math.floor( (timeLeft/(1000*60*60)) % 24 );
-                                    const text = (hours != 0 ? hours + ' hrs' : '') + ' ' + (minutes != 0 ? minutes + ' mins' : '')
+                                    const timeText = (hours != 0 ? hours + ' hrs' : '') + ' ' + (minutes != 0 ? minutes + ' mins' : '')
                                     
                                     // if less than 1 min remaining
-                                    if (text == ' ') {
+                                    if (timeText == ' ') {
                                         if (!shouldNotFlashCalls) {
                                             $(this).addClass('startingSoon')
                                         } else {
@@ -287,7 +287,7 @@
                                         timeCell.innerHTML = "<b>Starting now</b>"
                                         return
                                     }                                       
-                                    timeCell.innerHTML = text
+                                    timeCell.innerHTML = timeText + " left"
                                 })
                             }
 
