@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'SECRET'
 
 // Express app and Node server
@@ -218,7 +218,8 @@ app.post('/create-call', async(req, res) => {
 
   const startsAt = startNow == 'on' ? new Date(Date.now()) : new Date(startTime)
   if (startsAt < new Date(Date.now())) {
-    res.status(401).send('Must select a date in the future')
+    req.flash('error', 'Please select a date and time in the future.')
+    res.redirect('/dashboard')
     return
   }
 
@@ -270,7 +271,6 @@ app.post('/end-call', async(req, res) => {
   }
   res.status(401).send()
 })
-
 
 // Signup page
 app.get('/signup', (req, res) => {
@@ -426,6 +426,25 @@ app.post('/call-history', async(req, res) => {
     res.status(401).send('Unauthorised access or error occurred')
   }
 })
+
+
+// Delete a call from the dashboard (NOT FULLY PROTECTED)
+app.post('/delete-call', async(req, res) => {
+  const roomId = req.body.roomID
+  const doctorId = req.body.doctorID
+  try {
+    // CHECK THAT THE ROOM'S DOCTOR IS THE SAME AS THE DOCTOR_ID, AVAILABLE IN DASHBOARD!
+    // same process as in /start-call/
+    const roomRef = admin.firestore().collection('rooms').doc(`${roomId}`)
+    await roomRef.delete()
+  } catch (error) {
+    console.log("ERROR (could not delete call): ", error)
+    res.status(401).send()
+    return
+  }
+  res.status(200).send()
+})
+
 
 // Account and profile settings page
 app.get('/account', (req, res) => {
