@@ -1,5 +1,5 @@
-const LOCAL_DEBUG = true
-const SECRET_KEY = process.env.SECRET || 'hr4lGFD$%gdhfignsd50983htdfsgjkdsfdkls' // hide in env var
+const LOCAL_DEBUG = false
+const SECRET_KEY = process.env.SECRET || 'SECRET'
 
 // Express app and Node server
 const express = require('express')
