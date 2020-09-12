@@ -7,10 +7,16 @@
     <title>Mediochat Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.min.css">
     <link rel="stylesheet" href="css/dashboard.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.17.1/dist/bootstrap-table.min.js"></script>
+	<script src="/js/dashboard.js" defer></script>
 </head>
 
 <body>
@@ -43,104 +49,6 @@
                     </div>
                 </div>
             </div>
-            <!-- <div class="row">
-                <div class="col-md-6" style="margin-top:0px;">
-                    <h4 class="text-center" style="margin-bottom:15px;">Call History</h4>
-                    <% if (callHistory.length > 0) { %>
-                        <div class="datagrid">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Call ID</th>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (let call of callHistory){ %>
-                                        <tr>
-                                            <td><%= call.roomCode %></td>
-                                            <td><%= call.startsAt.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></td>
-                                            <td><%= call.startsAt.toLocaleTimeString() %></td>
-                                            <td><a href="#">View Details</a></td>
-                                        </tr>
-                                    <%}%>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="4">
-                                            <div class="paging">
-                                                <ul>
-                                                    <li><a href="#"> <span>Previous </span></a></li>
-                                                    <li><a href="#" class="active"> <span>1 </span></a></li>
-                                                    <li><a href="#"> <span>2 </span></a></li>
-                                                    <li><a href="#"> <span>3</span></a></li>
-                                                    <li><a href="#"> <span>Next </span></a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    <%} else {%>
-                        <h5 class="text-center">You haven't made any calls yet.</h5>
-                    <%}%>
-
-                </div>
-                <div class="col-md-6" style="margin-top:0px;">
-                    <h4 class="text-center" style="margin-bottom:15px;">Upcoming Calls</h4>
-                    <% if (upcomingCalls.length > 0) { %>
-                        <div class="datagrid">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Call ID</th>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Time Remaining</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (let call of upcomingCalls){ %>
-                                        <% const timeLeft = call.startsAt - Date.parse(new Date()); %>
-                                        <% const seconds = Math.floor( (timeLeft/1000) % 60 );
-                                           const minutes = Math.floor( (timeLeft/1000/60) % 60 );
-                                           const hours = Math.floor( (timeLeft/(1000*60*60)) % 24 );
-                                           const days = Math.floor( timeLeft/(1000*60*60*24) ); 
-                                        %>
-                                        <tr>
-                                            <td><%= call.roomCode %></td>
-                                            <td><%= call.startsAt.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></td>
-                                            <td><%= call.startsAt.toLocaleTimeString() %></td>
-                                            <td><%= days != 0 ? days + ' days,' : '' %> <%= hours != 0 ? hours + ' hrs,' : '' %> <%= minutes != 0 ? minutes + ' mins' : '' %></td>
-                                        </tr>
-                                    <%}%>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="4">
-                                            <div class="paging">
-                                                <ul>
-                                                    <li><a href="#"> <span>Previous </span></a></li>
-                                                    <li><a href="#" class="active"> <span>1 </span></a></li>
-                                                    <li><a href="#"> <span>2 </span></a></li>
-                                                    <li><a href="#"> <span>3</span></a></li>
-                                                    <li><a href="#"> <span>Next </span></a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    <%} else {%>
-                        <h5 class="text-center">You haven't got any scheduled calls.</h5>
-                    <%}%>
-                </div>
-            </div>
-        </div> -->
     </div>
 
     <!-- Today's Calls -->
@@ -159,32 +67,28 @@
                 <div class="col-md-12">
                     <% if (todaysCalls.length > 0) { %>
                         <h4 class="text-center" style="margin-bottom: 15px;">Today's Scheduled Calls</h4>
-                        <div class="table-responsive table-bordered">
-                            <table class="table table-bordered">
-                                <thead>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="table-info">Call ID</th>
+                                    <th class="table-info">Scheduled Time</th>
+                                    <th class="table-info">Time Left</th>
+                                    <th class="table-info">Start Call</th>
+                                </tr>
+                            </thead>
+                            <tbody id="todaysCallsTableBody">
+                                <% for (let call of todaysCalls){ %>
                                     <tr>
-                                        <th class="table-info">Call ID</th>
-                                        <th class="table-info">Scheduled Time</th>
-                                        <th class="table-info">Time Left</th>
-                                        <th class="table-info">Start Call</th>
+                                        <td><%= call.roomCode %></td>
+                                        <td><%= call.startsAt.toLocaleTimeString() %></td>
+                                        <td data-finished="<%= call.finished %>" data-callTime="<%= call.startsAt %>"></td>
+                                        <td><a class="btn btn-info btn-block btn-sm" role="button" 
+                                            href="/start-call/<%= call.roomCode %>">Start Now</a>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody id="todaysCallsTableBody">
-                                    <% for (let call of todaysCalls){ %>
-                                        <tr>
-                                            <td><%= call.roomCode %></td>
-                                            <td><%= call.startsAt.toLocaleTimeString() %></td>
-                                            <td data-finished="<%= call.finished %>" data-callTime="<%= call.startsAt %>"></td>
-                                            <td><a class="btn btn-info btn-block btn-sm" role="button" 
-                                                href="/start-call/<%= call.roomCode %>">Start Now</a>
-                                            </td>
-                                        </tr>
-                                    <%}%>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        
+                                <%}%>
+                            </tbody>
+                        </table>
 
                         <div style="margin-top: 10px;">
                             <div class="custom-control custom-checkbox">
@@ -199,7 +103,6 @@
                         </div>
 
                         <script>
-
                             // only takes effect during the refresh period... need to fix somehow
                             var shouldHideFinishedCalls = false // store these settings is cookies?
                             var shouldNotFlashCalls = false
@@ -292,7 +195,7 @@
                             }
 
                             window.addEventListener("DOMContentLoaded", updateTimeLeft)
-                            setInterval(updateTimeLeft, 1000 * 1)   // revert to 30s once checkboxes work independently
+                            setInterval(updateTimeLeft, 1000 * 1)
                         </script>
                     <%} else {%>
                         <h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>
@@ -309,31 +212,29 @@
                 <div class="col-md-12">
                     <% if (upcomingCalls.length > 0) { %>
                         <h4 class="text-center" style="margin-bottom: 15px;">Upcoming Calls</h4>
-                        <div class="table-responsive table-bordered">
-                            <table class="table table-striped table-bordered table-sm">
-                                <thead>
+                        <table class="table table-striped table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="table-info">Call ID</th>
+                                    <th class="table-info">Date</th>
+                                    <th class="table-info">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for (let call of upcomingCalls){ %>
                                     <tr>
-                                        <th class="table-info">Call ID</th>
-                                        <th class="table-info">Date</th>
-                                        <th class="table-info">Time</th>
+                                        <td><%= call.roomCode %></td>
+                                        <td><%= call.startsAt.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+                                        <td><%= call.startsAt.toLocaleTimeString() %></td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (let call of upcomingCalls){ %>
-                                        <tr>
-                                            <td><%= call.roomCode %></td>
-                                            <td><%= call.startsAt.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></td>
-                                            <td><%= call.startsAt.toLocaleTimeString() %></td>
-                                        </tr>
-                                    <%}%>
-                                </tbody>
-                            </table>
-                        </div>
+                                <%}%>
+                            </tbody>
+                        </table>
                     <%} else {%>
                         <h5 class="text-center">You haven't got any upcoming scheduled calls.</h5>
                     <%}%>
-                    <a class="btn btn-primary btn-block btn-sm" role="button" 
-                    href="#" style="margin-top:20px;">View Call History</a>
+                    <button id="viewCallHistoryButton" type="button" class="btn btn-primary btn-block btn-sm" 
+                    style="margin-top:20px;">View Call History</button>
                 </div>
             </div>
         </div>
@@ -343,7 +244,8 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Call Setup</h4><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button></div>
+                    <h4 class="modal-title">Call Setup</h4><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
                 <form class="form-inline" action="/create-call" method="post" style="padding-bottom:4px;">
                     <div class="modal-body">
                         <div class="form-group" style="padding-bottom:10px;">
@@ -374,24 +276,30 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.0/js/bootstrap.bundle.min.js"></script>
-    <script src="js/dashboard.min.js"></script>
+    <div id="callHistoryModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="callHistoryModal" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="callHistoryModalContent">
+                <div class="modal-header">
+                    <h4 class="modal-title">Call History</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body" id="callHistoryModalBody">
+                    <table id="callHistoryTable" class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th data-field="callID">Call ID</th>
+                            <th data-field="date">Date</th>
+                            <th data-field="time">Time</th>
+                          </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        $(document).ready(function() {
-            const dateString = new Date().toISOString()
-            $("#dateTimeInput").attr("min", dateString.substring(0, dateString.length - 8))
-        })
-
-        $("#startCheckbox").click(function() {
-            if ($(this).prop("checked")) {
-                $("#scheduleTimeInput").hide()
-                $("#startCallButton").html('Start Call')
-            } else {
-                $("#scheduleTimeInput").show()
-                $("#startCallButton").html('Schedule Call')
-            }
-        })
+        const DOCTOR_ID = "<%= doctorID %>"
     </script>
 
 </body>

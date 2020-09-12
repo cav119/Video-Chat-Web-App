@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'hr4lGFD$%gdhfignsd50983htdfsgjkdsfdkls' // hide in env var
 
 // Express app and Node server
@@ -355,36 +355,15 @@ app.get('/logout', (req, res) => {
 // Doctor call dashboard
 app.get('/dashboard', (req, res) => {
 
-  // check if logged in
-  const sessionCookie = req.cookies.session || ''
-  admin.auth().verifySessionCookie(sessionCookie, true)
+  admin.auth().verifySessionCookie(req.cookies.session || '', true)
   .then(async(userData) => {
     
     const doctorRef = admin.firestore().collection('users').doc(userData.uid)
     try {
       const yesterday = new Date()
       yesterday.setDate(yesterday.getDate() - 1)
-
       const myCalls = admin.firestore().collection('rooms').where('doctorID', '==', doctorRef)
-      // const pastCalls = await myCalls.where('finished', '==', true).orderBy('startsAt', 'desc').get() // separate view?
       const upcomingCalls = await myCalls.where('startsAt', '>', admin.firestore.Timestamp.fromDate(yesterday)).get()
-
-      /*
-        PAST CALLS (KEEP AS IS)
-        UPCOMING CALLS (FINISHED = FALSE AND STARTS AT > TODAY)
-        TODAYS CALLS (STARTS AT DATE = TODAY) // also includes finished calls on the day (strikethrough)
-        // not sure how to do in firebase, current version works but not as efficient as it includes yesterdays calls
-      */
-
-      const pastCallsList = []
-      // pastCalls.forEach(call => {
-      //   const callData = call.data()
-      //   const roomData = {
-      //     roomCode: call.id,
-      //     startsAt: callData.startsAt.toDate()
-      //   }
-      //   pastCallsList.push(roomData)
-      // })
 
       const upcomingCallsList = []
       const todaysCallsList = []
@@ -407,9 +386,8 @@ app.get('/dashboard', (req, res) => {
         // ignore if it is finished and not today
       })
 
-      res.render('dashboard', { csrfToken: req.csrfToken(), errorFlash: req.flash('error'),
-                                callHistory: pastCallsList, upcomingCalls: upcomingCallsList, 
-                                todaysCalls: todaysCallsList })
+      res.render('dashboard', { csrfToken: req.csrfToken(), errorFlash: req.flash('error'), doctorID: userData.uid,
+                                upcomingCalls: upcomingCallsList, todaysCalls: todaysCallsList })
     } catch (error) {
       console.log(error)
       res.status(500).send(error)
@@ -421,6 +399,33 @@ app.get('/dashboard', (req, res) => {
   })
 })
 
+
+// Post request to load call history from the dashboard (NOT FULLY PROTECTED)
+app.post('/call-history', async(req, res) => {
+  try {
+    const doctorID = req.body.doctorID
+    const doctorRef = admin.firestore().collection('users').doc(doctorID)
+    const pastCalls = await admin.firestore().collection('rooms')
+                    .where('doctorID', '==', doctorRef)
+                    .where('finished', '==', true)
+                    .orderBy('startsAt', 'desc')
+                    .get()
+
+    const pastCallsList = []
+    pastCalls.forEach(call => {
+      const callData = call.data()
+      const roomData = {
+        roomCode: call.id,
+        startsAt: callData.startsAt.toDate()
+      }
+      pastCallsList.push(roomData)
+    })
+    res.json(pastCallsList)
+    
+  } catch (error) {
+    res.status(401).send('Unauthorised access or error occurred')
+  }
+})
 
 // Account and profile settings page
 app.get('/account', (req, res) => {
