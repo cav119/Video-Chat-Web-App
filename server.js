@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'SECRET'
 
 // Express app and Node server
