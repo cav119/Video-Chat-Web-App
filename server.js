@@ -50,6 +50,7 @@ app.use(express.static(__dirname));
 
 // Setup Firebase API backend
 const serviceAccount = require('./serviceAccountKey.json')
+const { time } = require('console')
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://mediochat.firebaseio.com'
@@ -214,9 +215,12 @@ app.post('/create-call', async(req, res) => {
   const email = req.body.email
   const mobile = req.body.mobile
   const startNow = req.body.startNow
-  const startTime = req.body.startTime
+  const dateStr = req.body.startDate
+  const timeStr = req.body.startTime
 
-  const startsAt = startNow == 'on' ? new Date(Date.now()) : new Date(startTime)
+  const actualDate = new Date(Date.parse(dateStr + "T" + timeStr))
+
+  const startsAt = startNow == 'on' ? new Date(Date.now()) : actualDate
   if (startsAt < new Date(Date.now())) {
     req.flash('error', 'Please select a date and time in the future.')
     res.redirect('/dashboard')
@@ -238,7 +242,7 @@ app.post('/create-call', async(req, res) => {
   }
   
   if (email == '' || mobile == '') {
-    console.log(`NOTE: PLEASE PROVIDE AT LEAST AN EMAIL OR A MOBILE NUMBER TO SEND THE CODE`)
+    // console.log(`NOTE: PLEASE PROVIDE AT LEAST AN EMAIL OR A MOBILE NUMBER TO SEND THE CODE`)
   }
 
   // if should start now, go to room, otherwise, back to dashboard

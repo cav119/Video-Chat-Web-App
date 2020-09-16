@@ -1,9 +1,6 @@
 var loadedCallHistoryYet = false
 
 $(document).ready(function() {
-    const dateString = new Date().toISOString()
-    $("#dateTimeInput").attr("min", dateString.substring(0, dateString.length - 8))
-
     $("#callHistoryTable").hide()
 })
 

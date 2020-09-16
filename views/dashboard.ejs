@@ -51,7 +51,6 @@
             </div>
     </div>
 
-    <!-- Today's Calls -->
     <div>
         <div class="container">
             <% if (errorFlash != "") { %>
@@ -63,186 +62,12 @@
                 </button>
             </div>
             <% } %>
+
+            <!-- Today's Calls -->
             <div class="row">
                 <div class="col-md-12">
-                    <% if (todaysCalls.length > 0) { %>
-                        <div id="todaysCallsTableDiv">
-                            <h4 class="text-center" style="margin-bottom: 15px;">Today's Scheduled Calls</h4>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th class="table-info">Call ID</th>
-                                        <th class="table-info">Scheduled Time</th>
-                                        <th class="table-info">Time Left</th>
-                                        <th class="table-info">Start Call</th>
-                                        <th class="table-info">Delete Call</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="todaysCallsTableBody">
-                                    <% for (let call of todaysCalls){ %>
-                                        <tr>
-                                            <td><%= call.roomCode %></td>
-                                            <td><%= call.startsAt.toLocaleTimeString() %></td>
-                                            <td data-finished="<%= call.finished %>" data-callTime="<%= call.startsAt %>"></td>
-                                            <td><a class="btn btn-info btn-block btn-sm" role="button" 
-                                                href="/start-call/<%= call.roomCode %>">Start Now</a>
-                                            </td>
-                                            <td>
-                                                <button id="cancelButton-<%= call.roomCode %>" 
-                                                    class="btn btn-danger btn-block btn-sm cancelButton" role="button">Cancel Call</button>
-                                            </td>
-                                        </tr>
-                                    <%}%>
-                                </tbody>
-                            </table>
-
-                            <div style="margin-top: 10px;">
-                                <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="hideFinishedCheck">
-                                    <label class="custom-control-label" for="hideFinishedCheck">Hide finished calls?</label>
-                                </div>
-
-                                <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="flashingCheck">
-                                    <label class="custom-control-label" for="flashingCheck">Don't flash calls?</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <script>
-                            var shouldHideFinishedCalls = false // store these settings is cookies?
-                            var shouldNotFlashCalls = false
-
-                            $('#hideFinishedCheck').on('change', evt => {
-                                if ($(evt.target).is(':checked')) {
-                                    shouldHideFinishedCalls = true
-                                } else {
-                                    shouldHideFinishedCalls = false
-                                }
-                            })
-
-                            $('#flashingCheck').on('change', evt => {
-                                if ($(evt.target).is(':checked')) {
-                                    shouldNotFlashCalls = true
-                                } else {
-                                    shouldNotFlashCalls = false
-                                }
-                            })
-
-                            function setCancelButtonEventListeners() {
-                                $(".cancelButton").each(function (idx, el) {
-
-                                    const callID = el.id.split("-")[1]
-                                    $("#cancelButton-"+callID).on('click', () => {
-                                        fetch('delete-call', {
-                                            method: 'POST',
-                                            headers: {
-                                                Accept: 'application/json',
-                                                'Content-Type': 'application/json',
-                                                'CSRF-Token': Cookies.get('XSRF-TOKEN'),
-                                            },
-                                            body: JSON.stringify({ doctorID: DOCTOR_ID, roomID: callID }),
-                                        })
-                                        .then((res) => {
-                                            if (res.ok) {
-                                                el.parentElement.parentElement.style.display = "none" // hide the row
-                                                // if there was only one row, then also need to remove the table
-                                                if (idx == 0) {
-                                                    $("#todaysCallsTableDiv").html(`<h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>`)
-                                                }
-                                            }
-                                        })
-                                        .catch((error) => {
-                                            console.log(body)
-                                        })
-                                    })
-                                    
-                                })
-                            }
-                            
-                            function updateTimeLeft() {
-                                $("#todaysCallsTableBody").find('tr').each(function (i, el) {
-                                    const timeCell = $(this).find('td').eq(2)[0]
-                                    const callTime = Date.parse(timeCell.getAttribute('data-callTime'))
-                                    const isFinished = timeCell.getAttribute('data-finished') == 'true'                                        
-                                
-                                    const timeLeft = callTime - Date.parse(new Date());
-                                    if (timeLeft < 0) {
-                                        if (!isFinished) {  // passed time but not finished
-
-                                            // Over time threshold message: show between 2 and 10 mins overtime
-                                            var secondsAgo = -timeLeft / 1000
-                                            var minsAgo = Math.floor(secondsAgo / 60);
-                                            var isLate = false
-
-                                            const MIN_THRESHOLD = 2 * 60
-                                            const MAX_THRESHOLD = 10 * 60
-                                            if (secondsAgo >= MIN_THRESHOLD && secondsAgo <= MAX_THRESHOLD) {
-                                                timeCell.innerHTML = "<b>Scheduled for " + minsAgo.toString() + "m " + (secondsAgo - minsAgo * 60).toString() + "s ago" + "</b>"
-                                            } else if (secondsAgo > MAX_THRESHOLD) { // over 10 mins
-                                                isLate = true
-                                                timeCell.innerHTML = "<b>You are late to this call (by " + minsAgo + " mins)" + "</b>"
-                                            } else { // if under 2 mins, still 'starting now'
-                                                timeCell.innerHTML = "<b>Starting now</b>"
-                                            }
-
-                                            if (!shouldNotFlashCalls) {
-                                                if (isLate) {
-                                                    $(this).addClass('late')
-                                                } else {
-                                                    $(this).addClass('startingSoon')
-                                                }
-                                            } else {
-                                                $(this).removeClass('startingSoon')
-                                                $(this).removeClass('late')
-                                            }
-                                            return
-
-                                        } else {    // passed time and already finished
-                                            $(this).removeClass('startingSoon')
-                                            $(this).removeClass('late')
-                                            if (shouldHideFinishedCalls) {
-                                                $(this).hide()
-                                            } else {
-                                                $(this).show()
-                                                $(this).addClass('finished') // grey out the row
-                                                $(this).find('td').eq(3).first('a').html("") // remove link
-                                                $(this).find('td').eq(4).html("") // remove button
-                                                timeCell.innerHTML = "This call has already finished"
-                                            }
-                                            return
-                                        }
-                                    }
-
-                                    // time remaining unit calculations
-                                    const seconds = Math.floor( (timeLeft/1000) % 60 );
-                                    const minutes = Math.floor( (timeLeft/1000/60) % 60 );
-                                    const hours = Math.floor( (timeLeft/(1000*60*60)) % 24 );
-                                    const timeText = (hours != 0 ? hours + ' hrs' : '') + ' ' + (minutes != 0 ? minutes + ' mins' : '')
-                                    
-                                    // if less than 1 min remaining
-                                    if (timeText == ' ') {
-                                        if (!shouldNotFlashCalls) {
-                                            $(this).addClass('startingSoon')
-                                        } else {
-                                            $(this).removeClass('startingSoon')
-                                        }
-                                        timeCell.innerHTML = "<b>Starting now</b>"
-                                        return
-                                    }                                       
-                                    timeCell.innerHTML = timeText + " left"
-                                })
-                            }
-
-                            window.addEventListener("DOMContentLoaded", () => {
-                                setCancelButtonEventListeners()
-                                updateTimeLeft()
-                            })
-                            setInterval(updateTimeLeft, 1000 * 1)
-                        </script>
-                    <%} else {%>
-                        <h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>
-                    <%}%>
+                        <div id="todaysCallSection"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -253,29 +78,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <% if (upcomingCalls.length > 0) { %>
-                        <h4 class="text-center" style="margin-bottom: 15px;">Upcoming Calls</h4>
-                        <table class="table table-striped table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th class="table-info">Call ID</th>
-                                    <th class="table-info">Date</th>
-                                    <th class="table-info">Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% for (let call of upcomingCalls){ %>
-                                    <tr>
-                                        <td><%= call.roomCode %></td>
-                                        <td><%= call.startsAt.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) %></td>
-                                        <td><%= call.startsAt.toLocaleTimeString() %></td>
-                                    </tr>
-                                <%}%>
-                            </tbody>
-                        </table>
-                    <%} else {%>
-                        <h5 class="text-center">You haven't got any upcoming scheduled calls.</h5>
-                    <%}%>
+                    <div id="upcomingCallSection"></div>
                     <button id="viewCallHistoryButton" type="button" class="btn btn-primary btn-block btn-sm" 
                     style="margin-top:20px;">View Call History</button>
                 </div>
@@ -304,9 +107,17 @@
                             <input id="startCheckbox" class="form-control" type="checkbox" name="startNow" checked>
                         </div>
 
-                        <div id="scheduleTimeInput" class="form-group" style="padding-bottom:10px; display: none">
-                            <label style="padding-right:42px;">Schedule Call Time:</label>
-                            <input id="dateTimeInput" class="form-control" type="datetime-local" name="startTime">
+
+                        <div id="scheduleTimeInput"  style="display: none">
+                            <div class="form-group" style="padding-bottom:10px">
+                                <label style="padding-right:42px;">Call Date:</label>
+                                <input class="form-control" type="date" name="startDate">
+                            </div>
+
+                            <div class="form-group" style="padding-bottom:10px">
+                                <label style="padding-right:42px;">Call Time:</label>
+                                <input class="form-control" type="time" name="startTime">
+                            </div>
                         </div>
                         
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -343,6 +154,97 @@
 
     <script>
         const DOCTOR_ID = "<%= doctorID %>"
+    </script>
+
+    <!-- BUILD TABLES SCRIPT -->
+    <script>
+        const upcomingCalls = <%-JSON.stringify(upcomingCalls)%>
+        const todaysCalls = <%-JSON.stringify(todaysCalls)%>
+
+        // UPCOMING CALLS
+        const upcomingSection = $("#upcomingCallSection")
+        if (upcomingCalls.length > 0) {
+            var htmlString = ""
+            htmlString += (`<h4 class="text-center" style="margin-bottom: 15px;">Upcoming Calls</h4>`)
+            htmlString += (`<table class="table table-striped table-bordered table-sm">`)
+            htmlString += (`<thead>
+                                <tr>
+                                    <th class="table-info">Call ID</th>
+                                    <th class="table-info">Date</th>
+                                    <th class="table-info">Time</th>
+                                </tr>
+                            </thead>`)
+
+            htmlString += (`<tbody>`)
+            for (let call of upcomingCalls) {
+                const callDate = new Date(call.startsAt)
+                htmlString += `<tr>
+                                    <td>${call.roomCode}</td>
+                                    <td>${callDate.toLocaleString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                                    <td>${callDate.toLocaleTimeString()}</td>
+                                </tr>`
+            }
+            htmlString += (`</tbody>`)
+            htmlString += (`</table>`)
+            upcomingSection.append(htmlString)
+        } else {
+            upcomingSection.append(`<h5 class="text-center">You haven't got any upcoming scheduled calls.</h5>`)
+        }
+
+        // TODAYS CALLS
+        const todaySection = $("#todaysCallSection")
+        if (todaysCalls.length > 0) {
+            var htmlString = ""
+            htmlString += (`<div id="todaysCallsTableDiv">
+                                <h4 class="text-center" style="margin-bottom: 15px;">Today's Scheduled Calls</h4>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="table-info">Call ID</th>
+                                            <th class="table-info">Scheduled Time</th>
+                                            <th class="table-info">Time Left</th>
+                                            <th class="table-info">Start Call</th>
+                                            <th class="table-info">Delete Call</th>
+                                        </tr>
+                                    </thead>`)
+
+            htmlString += `<tbody id="todaysCallsTableBody">`
+            for (let call of todaysCalls) {
+                const callDate = new Date(call.startsAt)
+                console.log(callDate.toLocaleTimeString())
+                htmlString += `<tr>
+                                    <td>${call.roomCode}</td>
+                                    <td>${callDate.toLocaleTimeString()}</td>
+                                    <td data-finished="${call.finished}" data-callTime="${callDate.toJSON()}"></td>
+                                    <td><a class="btn btn-info btn-block btn-sm" role="button" 
+                                        href="/start-call/${call.roomCode}">Start Now</a>
+                                    </td>
+                                    <td>
+                                        <button id="cancelButton-${call.roomCode}" 
+                                            class="btn btn-danger btn-block btn-sm cancelButton" role="button">Cancel Call</button>
+                                    </td>
+                                </tr>`
+            }
+            htmlString += `</tbody></table>`
+
+            htmlString += `<div style="margin-top: 10px;">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="hideFinishedCheck">
+                                    <label class="custom-control-label" for="hideFinishedCheck">Hide finished calls?</label>
+                                </div>
+
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="flashingCheck">
+                                    <label class="custom-control-label" for="flashingCheck">Don't flash calls?</label>
+                                </div>
+                            </div>`
+            htmlString += `<script src="/js/dashboard-time.js"><\/script>`
+            htmlString += `</div>`
+            todaySection.append(htmlString)
+        } else {
+            todaySection.append(`<h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>`)
+        }
+
     </script>
 
 </body>
