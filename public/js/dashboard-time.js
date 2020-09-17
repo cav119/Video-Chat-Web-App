@@ -1,5 +1,7 @@
 var shouldHideFinishedCalls = false // store these settings is cookies?
 var shouldNotFlashCalls = false
+var deletedFirstRow = false
+var todaysRowsTotal = 0
 
 $('#hideFinishedCheck').on('change', evt => {
     if ($(evt.target).is(':checked')) {
@@ -19,8 +21,8 @@ $('#flashingCheck').on('change', evt => {
 
 function setCancelButtonEventListeners() {
     $(".cancelButton").each(function (idx, el) {
-
         const callID = el.id.split("-")[1]
+        todaysRowsTotal += 1
         $("#cancelButton-"+callID).on('click', () => {
             fetch('delete-call', {
                 method: 'POST',
@@ -34,17 +36,16 @@ function setCancelButtonEventListeners() {
             .then((res) => {
                 if (res.ok) {
                     el.parentElement.parentElement.style.display = "none" // hide the row
-                    // if there was only one row, then also need to remove the table
                     if (idx == 0) {
-                        $("#todaysCallsTableDiv").html(`<h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>`)
+                        deletedFirstRow = true
                     }
+                    todaysRowsTotal -= 1
                 }
             })
             .catch((error) => {
-                console.log(body)
+                // console.log(error)
             })
         })
-        
     })
 }
 
@@ -126,4 +127,10 @@ window.addEventListener("DOMContentLoaded", () => {
     setCancelButtonEventListeners()
     updateTimeLeft()
 })
+
 setInterval(updateTimeLeft, 1000 * 1)
+setInterval(() => {
+    if (todaysRowsTotal <= 1 && deletedFirstRow) {
+        $("#todaysCallsTableDiv").html(`<h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>`)
+    }
+}, 100)
