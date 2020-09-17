@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = true
+const LOCAL_DEBUG = false
 const SECRET_KEY = process.env.SECRET || 'SECRET'
 
 // Express app and Node server
@@ -217,11 +217,15 @@ app.post('/create-call', async(req, res) => {
   const startNow = req.body.startNow
   const dateStr = req.body.startDate
   const timeStr = req.body.startTime
+  const tzOffset = parseInt(req.body.tzOffset)
 
   const actualDate = new Date(Date.parse(dateStr + "T" + timeStr))
+  console.log("Before", actualDate)
+  actualDate.setTime(actualDate.getTime() + tzOffset)
+  console.log("After", actualDate)
 
   const startsAt = startNow == 'on' ? new Date(Date.now()) : actualDate
-  if (startsAt < new Date(Date.now())) {
+  if (startsAt < new Date(Date.now() + tzOffset)) {
     req.flash('error', 'Please select a date and time in the future.')
     res.redirect('/dashboard')
     return

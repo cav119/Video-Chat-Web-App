@@ -2,6 +2,7 @@ var loadedCallHistoryYet = false
 
 $(document).ready(function() {
     $("#callHistoryTable").hide()
+    $("#tzOffset").attr("value", new Date().getTimezoneOffset() * 60 * 1000)
 })
 
 $("#startCheckbox").click(function() {
@@ -48,8 +49,6 @@ $("#viewCallHistoryButton").on('click', function() {
             // convert response body to json
             res.json()
             .then((jsonData) => {
-                console.log(jsonData)
-                console.log(processCallHistoryData(jsonData))
                 $("#callHistoryTable").bootstrapTable({data: processCallHistoryData(jsonData)})
                 $("#callHistoryModalContent").LoadingOverlay('hide')
                 $("#callHistoryTable").show()
