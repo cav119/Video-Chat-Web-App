@@ -36,7 +36,7 @@ function setCancelButtonEventListeners() {
             .then((res) => {
                 if (res.ok) {
                     el.parentElement.parentElement.style.display = "none" // hide the row
-                    if (idx == 0) {
+                    if (idx == todaysRowsTotal - 1) {
                         deletedFirstRow = true
                     }
                     todaysRowsTotal -= 1

@@ -212,7 +212,6 @@
             htmlString += `<tbody id="todaysCallsTableBody">`
             for (let call of todaysCalls) {
                 const callDate = new Date(call.startsAt)
-                callDate.setTime(callDate.getTime() - callDate.getTimezoneOffset() * 60 * 1000)
                 htmlString += `<tr>
                                     <td>${call.roomCode}</td>
                                     <td>${callDate.toLocaleTimeString()}</td>
