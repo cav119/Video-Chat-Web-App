@@ -220,9 +220,8 @@ app.post('/create-call', async(req, res) => {
   const tzOffset = parseInt(req.body.tzOffset)
 
   const actualDate = new Date(Date.parse(dateStr + "T" + timeStr))
-  console.log("Before", actualDate)
-  actualDate.setTime(actualDate.getTime() + tzOffset)
-  console.log("After", actualDate)
+  actualDate.setTime(LOCAL_DEBUG ? actualDate.getTime() : actualDate.getTime() + tzOffset)
+  // Issue seems to be the remote server, needs to take in the client's timezone offset
 
   const startsAt = startNow == 'on' ? new Date(Date.now()) : actualDate
   if (startsAt < new Date(Date.now() + tzOffset)) {
