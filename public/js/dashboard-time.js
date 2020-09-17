@@ -1,6 +1,5 @@
 var shouldHideFinishedCalls = false // store these settings is cookies?
 var shouldNotFlashCalls = false
-var deletedFirstRow = false
 var todaysRowsTotal = 0
 
 $('#hideFinishedCheck').on('change', evt => {
@@ -35,15 +34,15 @@ function setCancelButtonEventListeners() {
             })
             .then((res) => {
                 if (res.ok) {
-                    el.parentElement.parentElement.style.display = "none" // hide the row
-                    if (idx == todaysRowsTotal - 1) {
-                        deletedFirstRow = true
-                    }
                     todaysRowsTotal -= 1
+                    el.parentElement.parentElement.remove() // remove the row from the table
+                    if (todaysRowsTotal == 0) {
+                        $("#todaysCallsTableDiv").html(`<h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>`)
+                    }
                 }
             })
             .catch((error) => {
-                // console.log(error)
+                alert("Could not delete the call due to a server error: " + error)
             })
         })
     })
@@ -129,8 +128,3 @@ window.addEventListener("DOMContentLoaded", () => {
 })
 
 setInterval(updateTimeLeft, 1000 * 1)
-setInterval(() => {
-    if (todaysRowsTotal <= 1 && deletedFirstRow) {
-        $("#todaysCallsTableDiv").html(`<h5 class="text-center" style="margin-bottom: 20px;">You haven't got any scheduled calls today.</h5>`)
-    }
-}, 100)
