@@ -66,7 +66,7 @@ function updateTimeLeft() {
                 const MIN_THRESHOLD = 2 * 60
                 const MAX_THRESHOLD = 10 * 60
                 if (secondsAgo >= MIN_THRESHOLD && secondsAgo <= MAX_THRESHOLD) {
-                    timeCell.innerHTML = "<b>Scheduled for " + minsAgo.toString() + "m " + (secondsAgo - minsAgo * 60).toString() + "s ago" + "</b>"
+                    timeCell.innerHTML = "<b>Scheduled for " + minsAgo.toString() + "m " + Math.round(secondsAgo - minsAgo * 60).toString() + "s ago" + "</b>"
                 } else if (secondsAgo > MAX_THRESHOLD) { // over 10 mins
                     isLate = true
                     timeCell.innerHTML = "<b>You are late to this call (by " + minsAgo + " mins)" + "</b>"

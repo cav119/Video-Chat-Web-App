@@ -1,7 +1,7 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'SECRET'
-const EMAIL = process.env.EMAIL
-const EMAIL_PASS = process.env.EMAIL_PASS 
+const EMAIL = process.env.EMAIL || "mediochat@outlook.com"
+const EMAIL_PASS = process.env.EMAIL_PASS || "AmQ=39W4"
 
 // Express app and Node server
 const express = require('express')
