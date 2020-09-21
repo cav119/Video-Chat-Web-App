@@ -1,6 +1,6 @@
 const LOCAL_DEBUG = false
 const SECRET_KEY = process.env.SECRET || 'SECRET'
-const EMAIL = process.env.EMAIL
+const EMAIL = process.env.EMAIL || "mediochat@outlook.com"
 const EMAIL_PASS = process.env.EMAIL_PASS
 
 // Express app and Node server
@@ -295,7 +295,7 @@ app.post('/create-call', async(req, res) => {
       from: "Mediochat " + EMAIL,
       to: email,
       subject: "NEW APPOINTMENT SCHEDULED by " + doctorName,
-      html: startNow == 'on' ? emailHTMLNow(doctorName, roomCode) : emailHTMLFuture(startsAt.toLocaleString(), doctorName, roomCode)
+      html: startNow == 'on' ? emailHTMLNow(doctorName, roomCode) : emailHTMLFuture(startsAt.toUTCString(), doctorName, roomCode)
     }, (err, info) => {
       if (err) {
         emailErrorCallback(roomCode)
@@ -510,7 +510,7 @@ app.post('/delete-call', async(req, res) => {
       res.status(500).send("Could not find the user")
       return
     }
-    const dateString = roomDoc.data().startsAt.toDate()
+    const dateString = roomDoc.data().startsAt.toDate().toDateString()
     const email = roomDoc.data().patientEmail
     // delete it
     await roomRef.delete()
