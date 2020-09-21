@@ -1,5 +1,7 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'SECRET'
+const EMAIL = process.env.EMAIL || "mediochat@outlook.com"
+const EMAIL_PASS = process.env.EMAIL_PASS
 
 // Express app and Node server
 const express = require('express')
@@ -26,6 +28,7 @@ const admin = require('firebase-admin')
 const crypto = require('crypto')
 const flash = require('connect-flash')
 const session = require('express-session')
+const nodemailer = require('nodemailer')
 
 // Application and external package setup
 app.set('view engine', 'ejs')
@@ -46,15 +49,35 @@ app.use(session({
 app.use(flash())
 app.use(express.static(__dirname));
 
-/////////////
 
 // Setup Firebase API backend
 const serviceAccount = require('./serviceAccountKey.json')
-const { time } = require('console')
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://mediochat.firebaseio.com'
 })
+
+// Setup email
+const transporter = nodemailer.createTransport({
+  service: 'hotmail',
+  auth: {
+    user: EMAIL,
+    pass: EMAIL_PASS
+  }
+})
+
+emailHTMLFuture = (dateString, doctorName, roomCode) => {
+  return `<style>body{font-family: Arial, Helvetica, sans-serif;}</style> <h4>This email is confirmation that an appointment has been scheduled on Mediochat.</h4> <h3>Appointment details:</h3> <ul id="details"> <li>Date and Time: ${dateString}</li><li>Doctor: ${doctorName}</li><li><b>Access Code: ${roomCode}</b></li></ul> <h4>How to access the appointment</h4> <ol id="steps"> <li>Visit <a href="mediochat.herokuapp.com">mediochat.herokuapp.com</a> on your <b>computer's web browser</b></li><li>Enter the access code <b>${roomCode}</b> and click the 'Start Call' button</li><li>Fill in the form with your details and click the 'Call' button</li></ol> <br><p>Please do not reply to this email, as this is an automated email sent by Mediochat.</p><p>If you have any questions about your appointment, please directly contact your doctor directly.</p>`
+}
+
+emailHTMLNow = (doctorName, roomCode) => {
+  return `<style>body{font-family: Arial, Helvetica, sans-serif;}</style> <h2>Your appointment is starting right now!</h2> <p style="font-size: large;">The access code for the appointment with ${doctorName} is <b>${roomCode}</b></p><h4>How to access the appointment</h4> <ol id="steps"> <li>Visit <a href="mediochat.herokuapp.com">mediochat.herokuapp.com</a> on your <b>computer's web browser</b></li><li>Enter the access code <b>${roomCode}</b> and click the 'Start Call' button</li><li>Fill in the form with your details and click the 'Call' button</li></ol> <br><p>Please do not reply to this email, as this is an automated email sent by Mediochat.</p>`
+}
+
+emailHTMLCancelled = (doctorName, dateString) => {
+  return `<style>body{font-family: Arial, Helvetica, sans-serif;}</style> <h4>The appointment with ${doctorName} scheduled for ${dateString} has been cancelled.</h4> <p>If you think this was a mistake, please contact your doctor directly.</p><p>Please do not reply to this email, as this is an automated email sent by Mediochat.</p>`
+}
+
 
 // Middleware to force HTTPS connections
 app.all('*', (req, res, next) => {
@@ -72,6 +95,7 @@ app.all('*', (req, res, next) => {
   next()
 })
 
+////////////////////////////////
 
 // Home
 app.get('/', (req, res) => {
@@ -197,6 +221,18 @@ roomCodeHash = (roomCode) => {
   return crypto.createHash('md5').update(roomCode).digest('hex')
 } 
 
+// If could not send an email after creating the room, delete it
+emailErrorCallback = async(roomCode) => {
+  console.log("Deleting this: " + roomCode)
+  try {
+    const roomRef = admin.firestore().collection('rooms').doc(`${roomCode}`)
+    await roomRef.delete()
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
 // Creates a call for a doctor: generates code and room
 app.post('/create-call', async(req, res) => {
 
@@ -213,7 +249,7 @@ app.post('/create-call', async(req, res) => {
   const roomCode = Math.floor(100000 + Math.random() * 900000) // both the 6-digit access code and ID
     
   const email = req.body.email
-  const mobile = req.body.mobile
+  // const mobile = req.body.mobile
   const startNow = req.body.startNow
   const dateStr = req.body.startDate
   const timeStr = req.body.startTime
@@ -230,24 +266,49 @@ app.post('/create-call', async(req, res) => {
     return
   }
 
+  if (email == '') {
+    req.flash('error', 'Please provide the patient\'s email or mobile phone.')
+    res.redirect('/dashboard')
+    return
+  }
+
   try {
     // create room in firebase
-    const doctorRef = admin.firestore().collection('users').doc(doctorID) // do some validation maybe? not entirely necessary tbh
+    const doctorRef = admin.firestore().collection('users').doc(doctorID)
     const newRoomRef = admin.firestore().collection('rooms').doc(`${roomCode}`)
     await newRoomRef.set({
       'doctorID': doctorRef,
       'finished': false,
-      'startsAt': admin.firestore.Timestamp.fromDate(startsAt)
+      'startsAt': admin.firestore.Timestamp.fromDate(startsAt),
+      'patientEmail': email,
     })
+
+    // get the doctor name
+    const userDoc = await doctorRef.get()
+    if (!userDoc.exists) {
+      res.status(500).send("Could not find the user")
+      return
+    }
+    const doctorName = userDoc.data().name + " " + userDoc.data().surname
+
+    transporter.sendMail({
+      from: "Mediochat " + EMAIL,
+      to: email,
+      subject: "NEW APPOINTMENT SCHEDULED by " + doctorName,
+      html: startNow == 'on' ? emailHTMLNow(doctorName, roomCode) : emailHTMLFuture(startsAt.toLocaleString(), doctorName, roomCode)
+    }, (err, info) => {
+      if (err) {
+        emailErrorCallback(roomCode)
+        return
+      }
+    })
+
   } catch (error) {
-    console.log("ERROR: ", error)
+    req.flash('error', 'Could not create the call due to an internal server error.')
+    res.redirect('/dashboard')
     return
   }
   
-  if (email == '' || mobile == '') {
-    // console.log(`NOTE: PLEASE PROVIDE AT LEAST AN EMAIL OR A MOBILE NUMBER TO SEND THE CODE`)
-  }
-
   // if should start now, go to room, otherwise, back to dashboard
   if (startNow == 'on') {
     const options = { maxAge: 60 * 60 * 1000 , httpOnly: true }
@@ -443,7 +504,34 @@ app.post('/delete-call', async(req, res) => {
     // CHECK THAT THE ROOM'S DOCTOR IS THE SAME AS THE DOCTOR_ID, AVAILABLE IN DASHBOARD!
     // same process as in /start-call/
     const roomRef = admin.firestore().collection('rooms').doc(`${roomId}`)
+    // get the call date time
+    const roomDoc = await roomRef.get()
+    if (!roomDoc.exists) {
+      res.status(500).send("Could not find the user")
+      return
+    }
+    const dateString = roomDoc.data().startsAt.toDate()
+    const email = roomDoc.data().patientEmail
+    // delete it
     await roomRef.delete()
+
+    // get the doctor name
+    const doctorRef = admin.firestore().collection('users').doc(`${doctorId}`)
+    const userDoc = await doctorRef.get()
+    if (!userDoc.exists) {
+      res.status(500).send("Could not find the user")
+      return
+    }
+    const doctorName = userDoc.data().name + " " + userDoc.data().surname
+
+    // send email to the patient saying the appointment was cancelled
+    transporter.sendMail({
+      from: "Mediochat " + EMAIL,
+      to: email,
+      subject: "APPOINTMENT CANCELLED by " + doctorName,
+      html: emailHTMLCancelled(doctorName, dateString)
+    }, (err, info) => {})
+    
   } catch (error) {
     console.log("ERROR (could not delete call): ", error)
     res.status(401).send()
