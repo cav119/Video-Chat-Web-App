@@ -1,6 +1,6 @@
 const LOCAL_DEBUG = false
 const SECRET_KEY = process.env.SECRET || 'SECRET'
-const EMAIL = process.env.EMAIL || "mediochat@outlook.com"
+const EMAIL = process.env.EMAIL
 const EMAIL_PASS = process.env.EMAIL_PASS
 
 // Express app and Node server
@@ -256,6 +256,7 @@ app.post('/create-call', async(req, res) => {
   const tzOffset = parseInt(req.body.tzOffset)
 
   const actualDate = new Date(Date.parse(dateStr + "T" + timeStr))
+  const originalDate = actualDate
   actualDate.setTime(LOCAL_DEBUG ? actualDate.getTime() : actualDate.getTime() + tzOffset)
   // Issue seems to be the remote server, needs to take in the client's timezone offset
 
@@ -295,7 +296,7 @@ app.post('/create-call', async(req, res) => {
       from: "Mediochat " + EMAIL,
       to: email,
       subject: "NEW APPOINTMENT SCHEDULED by " + doctorName,
-      html: startNow == 'on' ? emailHTMLNow(doctorName, roomCode) : emailHTMLFuture(startsAt.toUTCString(), doctorName, roomCode)
+      html: startNow == 'on' ? emailHTMLNow(doctorName, roomCode) : emailHTMLFuture(originalDate, doctorName, roomCode)
     }, (err, info) => {
       if (err) {
         emailErrorCallback(roomCode)
