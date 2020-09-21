@@ -1,7 +1,7 @@
 const LOCAL_DEBUG = false
 const SECRET_KEY = process.env.SECRET || 'SECRET'
 const EMAIL = process.env.EMAIL
-const EMAIL_PASS = process.env.EMAIL_PASS
+const EMAIL_PASS = process.env.EMAIL_PASS 
 
 // Express app and Node server
 const express = require('express')
@@ -256,7 +256,6 @@ app.post('/create-call', async(req, res) => {
   const tzOffset = parseInt(req.body.tzOffset)
 
   const actualDate = new Date(Date.parse(dateStr + "T" + timeStr))
-  const originalDate = actualDate
   actualDate.setTime(LOCAL_DEBUG ? actualDate.getTime() : actualDate.getTime() + tzOffset)
   // Issue seems to be the remote server, needs to take in the client's timezone offset
 
@@ -292,11 +291,12 @@ app.post('/create-call', async(req, res) => {
     }
     const doctorName = userDoc.data().name + " " + userDoc.data().surname
 
+    const dateString = dateStr + " at " + timeStr
     transporter.sendMail({
       from: "Mediochat " + EMAIL,
       to: email,
-      subject: "NEW APPOINTMENT SCHEDULED by " + doctorName,
-      html: startNow == 'on' ? emailHTMLNow(doctorName, roomCode) : emailHTMLFuture(originalDate, doctorName, roomCode)
+      subject: startNow == 'on' ? "APPOINTMENT STARTING NOW" : "NEW APPOINTMENT SCHEDULED by " + doctorName,
+      html: startNow == 'on' ? emailHTMLNow(doctorName, roomCode) : emailHTMLFuture(dateString, doctorName, roomCode)
     }, (err, info) => {
       if (err) {
         emailErrorCallback(roomCode)
