@@ -10,7 +10,7 @@ var optionsProduction = {
   port: 443
 }
 
-var LOCAL_DEBUG = false
+var LOCAL_DEBUG = true
 const myPeer = new Peer(undefined, LOCAL_DEBUG ? optionsDebug : optionsProduction)
 
 const videoGrid = document.getElementById('video-grid')
