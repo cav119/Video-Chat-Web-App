@@ -1,7 +1,7 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'SECRET'
-const EMAIL = process.env.EMAIL
-const EMAIL_PASS = process.env.EMAIL_PASS
+const EMAIL = process.env.EMAIL || "mediochat@outlook.com"
+const EMAIL_PASS = process.env.EMAIL_PASS || "AmQ=39W4"
 
 // Express app and Node server
 const express = require('express')
@@ -193,7 +193,7 @@ app.get('/room/:room', (req, res) => {
           res.status(500).send("Internal server error: Could not find the logged in user")
           return
         }
-        doctorName = 'Dr.' + userDoc.data().name + ' ' + userDoc.data().surname
+        doctorName = 'Dr. ' + userDoc.data().name + ' ' + userDoc.data().surname
         res.render('room', { roomId: req.params.room, userType: userType, patientName: patientName, doctorName: doctorName })
 
       } catch (error) {

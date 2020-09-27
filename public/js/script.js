@@ -1,4 +1,4 @@
-const socket = io('/')
+const socket = io('/');
 
 var optionsDebug = {
   host: '/',
@@ -9,16 +9,34 @@ var optionsProduction = {
   path: '/peer',
   port: 443
 }
-var LOCAL_DEBUG = false
+
+var LOCAL_DEBUG = true
 const myPeer = new Peer(undefined, LOCAL_DEBUG ? optionsDebug : optionsProduction)
 
-const waitingInfo = document.getElementById("waiting-info")
 const videoGrid = document.getElementById('video-grid')
 const myVideo = document.createElement('video')
 myVideo.className = 'localVideo';
 myVideo.muted = true // mute local video
 
 const peers = {}
+
+function createWaitElement() {
+  const wait = document.createElement("div");
+  wait.style.textAlign = "center";
+  wait.style.fontSize = "xxx-large";
+  wait.style.fontFamily = "sans-serif";
+  wait.style.backgroundColor = "white";
+  wait.id = 'wait';
+  wait.innerHTML += `<br>`
+  wait.innerHTML += `Code: <b>${ROOM_ID}</b><br>`;
+  wait.innerHTML += "Waiting to connect...";
+  return wait
+}
+
+if(!(document.getElementById("wait"))) {
+  const wait = createWaitElement()
+  videoGrid.append(wait);
+}
 
 // Access video/audio stream via browser
 navigator.mediaDevices.getUserMedia({
@@ -33,8 +51,8 @@ navigator.mediaDevices.getUserMedia({
 
   // when someone tries to call us, answer the call by sending our stream
   myPeer.on('call', call => {
-    call.answer(stream)
-    const video = document.createElement('video')
+    call.answer(stream);
+    const video = document.createElement('video');
     video.id = 'peerVideo';
 
     // load the video stream of the user trying to call us on our screen
@@ -54,7 +72,7 @@ navigator.mediaDevices.getUserMedia({
 socket.on('user-disconnected', (userId, userName) => {
   if (peers[userId]){
     peers[userId].close();
-    appendMessage(`${userName} has disconected`, 1, 1)
+    appendMessage(`${userName} has disconnected`, 1, 1)
   };
 })
 
@@ -77,6 +95,14 @@ function connectToNewUser(userId, stream) {
 
   call.on('close', () => {
     video.remove()
+    const wait = createWaitElement()
+    if (USER_TYPE == 'doctor') {
+      wait.innerHTML = `<br>The patient has disconnected<br>`
+      wait.innerHTML += "Waiting to connect..."
+    } else if (USER_TYPE == 'patient') {
+      wait.innerHTML = `<br>The doctor has disconnected<br>`
+    }
+    videoGrid.append(wait);
   })
 
   peers[userId] = call
@@ -88,8 +114,11 @@ function addVideoStream(video, stream) {
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })
-  video.id="peerVideo"
-  videoGrid.append(video)
+  video.id="peerVideo";
+  if(document.getElementById("wait")){
+    document.getElementById("wait").remove();
+  }
+  videoGrid.append(video);
 }
 
 
@@ -102,20 +131,35 @@ const messageInput = document.getElementById('message-input')
 appendMessage('You connected', 0, 1)
 
 socket.on('chat-message', data => {
-  appendMessage(`${data.name} \n ${data.message}`, 1, 0)
+  appendMessage(`${data.name}:\n ${data.message}`, 1, 0)
 })
-
 
 messageForm.addEventListener('submit', e => {
   e.preventDefault()
   const message = messageInput.value
   if (message.split(" ").join("") !== ""){
     document.createElement('user')
-    appendMessage(`You \n ${message}`, 0, 0)
+    appendMessage(`You:\n ${message}`, 0, 0)
     socket.emit('send-chat-message', message)
     messageInput.value = ''
   }
 })
+
+window.addEventListener("DOMContentLoaded", () => {
+  $("#wait").LoadingOverlay('show', {
+    imageColor: "rgb(5,90,218)",
+    background: "rgba(255, 255, 255, 0.5)",
+  });
+  $("#peerVideo").LoadingOverlay("hide");
+});
+
+socket.on("user-disconnected", (userId, userName) => {
+  $("#wait").LoadingOverlay('show', {
+    imageColor: "rgb(5,90,218)",
+    background: "rgba(255, 255, 255, 0.5)",
+  });
+}) 
+
 
 //second argument represents side of chat "left/right" and third represents box size
 function appendMessage(message, side, size) {
@@ -129,7 +173,7 @@ function appendMessage(message, side, size) {
     messageElement.style.minHeight = "10px";
   }
   messageElement.innerText = message
-  var dt = new Date();
+  // var dt = new Date();
   //messageElement.innerHTML += "<p><span id=\"datetime\" class=\"time-left\"></span></p>";
   //messageElement.append(dt.toLocaleTimeString());
   messageContainer.append(messageElement)

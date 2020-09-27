@@ -28,7 +28,6 @@ git push heroku master
 
 ## TODO (by priority)
 - LIMIT number of users in a room to 2 (do it client side or maybe server side)
-- Have room code panel at the top, and waiting to connect box on the room UI
 - verify account firebase
 - Factor out frontend code from login and signup views
 - HIDE serviceAccountKey.json config as an env variable for security on deployment?

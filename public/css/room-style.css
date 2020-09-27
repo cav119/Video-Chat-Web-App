@@ -1,75 +1,69 @@
 body {
-    background-image: url('../img/background4K.jpg');
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover;
+    background-image: url('../img/az-subtle.png');
+    background-color: #5e5e5e;
   }
 
-  #video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 63vw);
-      grid-auto-rows: 85vh;
-      position: absolute;
-      left: 28vw;
-  }
-  #localVideoGrid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 21vw);
-      grid-auto-rows: 34vh;
-      position: absolute;
-  }
+#video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 63vw);
+    grid-auto-rows: 85vh;
+    position: absolute;
+    left: 28vw;
+}
 
-  video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      margin: 10px;
-      border-style: dashed;
-      transform: rotateY(180deg);
-      -webkit-transform:rotateY(180deg); /* Safari and Chrome */
-         -moz-transform:rotateY(180deg); /* Firefox */
-  }
+#localVideoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 21vw);
+    grid-auto-rows: 34vh;
+    position: absolute;
+}
 
-  .localVideo {
-      width: 90;
-      height: 90%;
-      object-fit: cover;
-      margin: 10px;
-      border-style: dotted;
-      border-color: aqua;
-      margin: auto auto;
-  }
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 10px;
+    border-style: solid;
+    transform: rotateY(180deg);
+    -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+    -moz-transform:rotateY(180deg); /* Firefox */
+}
 
-  #peerVideo {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      margin: 10px;
-      border-style: dashed;
-      border-color: brown;
-      
-  }
+.localVideo {
+    width: 90;
+    height: 90%;
+    object-fit: cover;
+    margin: 10px;
+    border-color: white;
+    margin: auto auto;
+}
 
-  #chat {
-      position: absolute;
-      top: 35vh;
-      width: 21vw;
-      height: 52vh;
-      border-color: greenyellow;
-      border-style: solid;
-      overflow: scroll;
-      scroll-behavior: auto;
-      background-color:transparent;
-      font-family: 'Courier New', Courier, monospace;
-      font-style: italic;
-      color: blanchedalmond;
-      font-size: 10px;
-      background-color: rgba(red, green, blue, 0.3);
-  }
+#peerVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 10px;
+    border-color: white;
+}
 
+#chat {
+    position: absolute;
+    top: 35vh;
+    width: 21vw;
+    height: 52vh;
+    border-color: white;
+    border-style: solid;
+    overflow: scroll;
+    overflow-x: hidden;
+    scroll-behavior: auto;
+    background-color: rgb(50, 50, 50);
+    font-family: sans-serif;
+    font-style: italic;
+    color: blanchedalmond;
+    font-size: 10px;
+}
 
-
-  #chat div {
+#chat div {
     border: 2px solid #dedede;
     color: black;
     font-style: normal;
@@ -80,78 +74,83 @@ body {
     width: 10vw;
     overflow: scroll;
     overflow-wrap: break-word;
-      }
+}
 
-      #chat div#user{
-        background-color: teal;
-        float: left;
-      }
+#chat div#user{
+    background-color: teal;
+    float: left;
+    overflow: hidden;
+}
   
-      #chat div#peer {
+#chat div#peer {
     background-color: wheat;
     float: right;
-      }
+    overflow: hidden;
+}
   
-      .time-right {
-      float: right;
-      color: #aaa;
-      }
+.time-right {
+    float: right;
+    color: #aaa;
+}
   
-      .time-left {
-      float: left;
-      color: #999;
-      }  
+.time-left {
+    float: left;
+    color: #999;
+}  
 
-      #chat-box {
-        position: absolute;
-        top: 660px;
-        width: 300px;
-        height: 60px;
-        }
+#chat-box {
+    position: absolute;
+    top: 660px;
+    width: 300px;
+    height: 60px;
+}
 
-    #send-container {
+#send-container {
     position: fixed;
     border-style: solid;
-    border-color: indigo;
-    background-color: aquamarine;
+    border-color: white;
     opacity: 0.6;
     top: 89vh;
     width: 21vw;
     height: 8vh;
     display: flex;
-    }
+}
 
-    #message-input {
+#message-input {
   flex-grow: 1;
-    }
+  font-family: sans-serif;
+}
 
-    #button-box {
-        position: absolute;
-        width: 16vw;
-        height: 4vh;
-        left: 56vw;
-        top: 89.5vh;
-    }
+#button-box {
+    position: absolute;
+    width: 16vw;
+    height: 4vh;
+    left: 53vw;
+    top: 89.5vh;
+}
 
-    #mute {
-        position: relative;
-        padding: 28px;
-        margin: 1px;
-        background-color: seagreen;
-        border: rgba(46, 139, 86, 0.767);
-        border-radius: 40%;
-    }
-    #mute:hover{
-        font-size: 10px;
-        color: black;
-    }
+#mute {
+    position: relative;
+    padding: 10px;
+    font-size: 20px;
+    margin-right: 2px;
+    background-color: seagreen;
+    border: seagreen;
+    border-radius: 20%;
+}
+#mute:hover{
+    background-color: rgb(38, 103, 66);
+}
 
-    #end-call {
-        position: fixed;
-        padding: 28px;
-        margin: 1px;
-        background-color: red;
-        border: rgba(255, 0, 0, 0.87);
-        border-radius: 40%;
-    }
- 
+#end-call {
+    position: fixed;
+    padding: 10px;
+    font-size: 20px;
+    margin-left: 2px;
+    background-color: red;
+    border: red;
+    border-radius: 20%;
+}
+#end-call:hover{
+    background-color: rgb(181, 0, 0);
+}
