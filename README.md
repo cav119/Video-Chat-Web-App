@@ -27,6 +27,7 @@ git push heroku master
 
 
 ## TODO (by priority)
+- Clean out the css style code for the ROOM page
 - LIMIT number of users in a room to 2 (do it client side or maybe server side)
 - verify account firebase
 - Factor out frontend code from login and signup views
