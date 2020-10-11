@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = true
+const LOCAL_DEBUG = false
 const SECRET_KEY = process.env.SECRET || 'SECRET'
 const EMAIL = process.env.EMAIL
 const EMAIL_PASS = process.env.EMAIL_PASS
