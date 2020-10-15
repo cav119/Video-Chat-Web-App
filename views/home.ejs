@@ -38,23 +38,29 @@
     <div class="features-boxed">
         <div class="container">
             <div class="intro">
-                <h2 class="text-center">Why MedioChat?</h2>
+                <h2 class="text-center">Why Mediochat?</h2>
             </div>
             <div class="row justify-content-center features" style="color:rgb(0,0,0);">
                 <div class="col-sm-6 col-md-5 col-lg-4 item">
                     <div class="box"><i class="fa fa-lock icon"></i>
-                        <h3 class="name">Secure</h3>
-                        <p class="description" style="color:rgb(0,0,0);">Built on a peer to peer model, there is no intermediate entity that can see or handle your data.</p><a href="#" class="learn-more">Learn more »</a></div>
+                        <h3 class="name">P2P</h3>
+                        <p class="description" style="color:rgb(0,0,0);">Built on a peer to peer model, there is no intermediate entity that can access your video calls.</p>
+                        <!-- <a href="#" class="learn-more">Learn more »</a> -->
+                    </div>
                 </div>
                 <div class="col-sm-6 col-md-5 col-lg-4 item">
-                    <div class="box"><i class="fa fa-bolt icon"></i>
-                        <h3 class="name">Fast</h3>
-                        <p class="description" style="color:rgb(0,0,0);">Aenean tortor est, vulputate quis leo in, vehicula rhoncus lacus. Praesent aliquam in tellus eu.</p><a href="#" class="learn-more">Learn more »</a></div>
+                    <div class="box"><i class="fa fa-handshake-o icon"></i>
+                        <h3 class="name">Free</h3>
+                        <p class="description" style="color:rgb(0,0,0);">Mediochat is free for both doctors and patients, making it accessible to everyone.</p>
+                        <!-- <a href="#" class="learn-more">Learn more »</a> -->
+                    </div>
                 </div>
                 <div class="col-sm-6 col-md-5 col-lg-4 item">
                     <div class="box"><i class="fa fa-group icon"></i>
                         <h3 class="name">Easy</h3>
-                        <p class="description" style="color:rgb(0,0,0);">Aenean tortor est, vulputate quis leo in, vehicula rhoncus lacus. Praesent aliquam in tellus eu.</p><a href="#" class="learn-more">Learn more »</a></div>
+                        <p class="description" style="color:rgb(0,0,0);">The clean and simple user interface makes it easy and straightforward to use, for both patients and doctors.</p>
+                        <!-- <a href="#" class="learn-more">Learn more »</a> -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -74,7 +80,7 @@
         <div class="container" style="padding-top:21px;">
             <div class="intro">
                 <h2 class="text-center">What our users say</h2>
-                <p class="text-center" style="color:rgb(0,0,0);">Read what some of our users (both patients and doctors) have to say about MedioChat</p>
+                <p class="text-center" style="color:rgb(0,0,0);">Read what some of our users have to say about Mediochat</p>
             </div>
             <div class="row people">
                 <div class="col-md-6 col-lg-4 item">
@@ -113,8 +119,7 @@
                 <li class="list-inline-item"><a href="/">Home</a></li>
                 <li class="list-inline-item"><a href="/login">Login</a></li>
                 <li class="list-inline-item"><a href="#">FAQ</a></li>
-                <li class="list-inline-item"><a href="#">About</a></li>
-                <li class="list-inline-item"><a href="#">Privacy Policy</a></li>
+                <li class="list-inline-item"><a href="/about">About</a></li>
             </ul>
             <p class="copyright">Mediochat © 2020</p>
         </footer>
@@ -154,7 +159,6 @@
             event.preventDefault(); 
             const code = event.target.code.value;
             // do basic frontend code validation:
-            // ie: code is a number, remove whitespace if present...
             if (code == '' || code.replace(/\s/g,'') == '') {
                 return;
             }

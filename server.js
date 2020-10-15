@@ -1,4 +1,4 @@
-const LOCAL_DEBUG = false
+const LOCAL_DEBUG = true
 const SECRET_KEY = process.env.SECRET || 'SECRET'
 const EMAIL = process.env.EMAIL
 const EMAIL_PASS = process.env.EMAIL_PASS
@@ -100,6 +100,11 @@ app.all('*', (req, res, next) => {
 // Home
 app.get('/', (req, res) => {
   res.render('home', { errorFlash: req.flash('error'), csrfToken: req.csrfToken() })
+})
+
+// About
+app.get('/about', (req, res) => {
+  res.render('about', {})
 })
 
 // Patient joins a call after submitting the details form
@@ -249,7 +254,6 @@ app.post('/create-call', async(req, res) => {
   const roomCode = Math.floor(100000 + Math.random() * 900000) // both the 6-digit access code and ID
     
   const email = req.body.email
-  // const mobile = req.body.mobile
   const startNow = req.body.startNow
   const dateStr = req.body.startDate
   const timeStr = req.body.startTime
@@ -469,7 +473,7 @@ app.get('/dashboard', (req, res) => {
 })
 
 
-// Post request to load call history from the dashboard (NOT FULLY PROTECTED)
+// Post request to load call history from the dashboard
 app.post('/call-history', async(req, res) => {
   try {
     const doctorID = req.body.doctorID
@@ -497,7 +501,7 @@ app.post('/call-history', async(req, res) => {
 })
 
 
-// Delete a call from the dashboard (NOT FULLY PROTECTED)
+// Delete a call from the dashboard
 app.post('/delete-call', async(req, res) => {
   const roomId = req.body.roomID
   const doctorId = req.body.doctorID
@@ -567,11 +571,6 @@ app.get('/account', (req, res) => {
     res.redirect('/login')
   })
 })
-
-/*
-  NEED TO MAKE A POST VIEW TO UPDATE USER DETAILS, SHOULD ALSO PROBABLY REFACTOR THE ACCOUNT VIEW BY DIFFERENT PARTS,
-  IE PASSWORD CHANGE IS DIFFERENT TO NAME CHANGE, ETC.
-*/
 
 const users = {}  // global object holding all users (should change later)
 
