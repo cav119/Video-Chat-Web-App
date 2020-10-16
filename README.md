@@ -33,3 +33,7 @@ git push heroku master
 - HIDE serviceAccountKey.json config as an env variable for security on deployment?
 - Need fix that you refresh to see a user joining on heroku version (peerjs or socket related error?)
 - peer JS key for connection?? (need to investigate more)
+
+## Demo account:
+Email: demo-account@mediochat.com
+Pass: dSETvxX=bm6EL2@b
