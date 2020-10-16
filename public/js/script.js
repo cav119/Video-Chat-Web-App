@@ -1,12 +1,17 @@
 const socket = io('/');
 
+var optionsDebug = {
+  host: '/',
+  port: 3001
+}
 var optionsProduction = {
   host: '/',
   path: '/peer',
   port: 443
 }
 
-const myPeer = new Peer(undefined, optionsProduction)
+var LOCAL_DEBUG = true
+const myPeer = new Peer(undefined, LOCAL_DEBUG ? optionsDebug : optionsProduction)
 
 const videoGrid = document.getElementById('video-grid')
 const myVideo = document.createElement('video')

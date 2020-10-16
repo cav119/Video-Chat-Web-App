@@ -13,6 +13,8 @@ peerjs --port 3001
 ```
 4. Make sure that ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` are set to ```true```. For deployment to Heroku, set to ```false```.
 
+Note: Errors may occur if the EMAIL and EMAIL_PASS env variables aren't configured locally.
+
 ## Heroku deployment
 1. Commit and push all the latest changes to the REPO first
 2. Set ```LOCAL_DEBUG``` in ```server.js``` and ```script.js``` to ```false```.
@@ -33,3 +35,8 @@ git push heroku master
 - HIDE serviceAccountKey.json config as an env variable for security on deployment?
 - Need fix that you refresh to see a user joining on heroku version (peerjs or socket related error?)
 - peer JS key for connection?? (need to investigate more)
+
+## Demo account:
+Email: demo-account@mediochat.com
+
+Pass: dSETvxX=bm6EL2@b
